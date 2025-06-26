@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Virgo</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background-image: url('1.gif');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: -1;
+    }
+
+    form {
+      max-width: 400px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.07);
+      padding: 2rem;
+      border-radius: 16px;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin: 1rem 0 0.3rem;
+      font-weight: 500;
+      color: #ddd;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.7rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      outline: none;
+    }
+
+    button {
+      margin-top: 2rem;
+      width: 100%;
+      padding: 0.8rem;
+      font-size: 1.1rem;
+      background: #00cc88;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #00b07a;
+    }
+
+    .back-btn {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      background: rgba(0,0,0,0.3);
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 10;
+      backdrop-filter: blur(4px);
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay"></div>
+  <button class="back-btn" onclick="location.href='utama.html'">←</button>
+
+  <form id="formSandi">
+    <h1>🔒 Ubah Sandi Admin</h1>
+
+    <label for="baru">Sandi Baru</label>
+    <input type="text" id="baru" required>
+
+    <button type="submit">Simpan</button>
+  </form>
+
+  <script>
+    if (sessionStorage.getItem("aksesAdmin") !== "true") {
+      location.href = "index.html";
+    }
+  </script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getFirestore, doc, setDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB59jxyeAOLp4bLJdBF4R0-bw7NnieEzes",
+      authDomain: "catatanvirgo-dbe55.firebaseapp.com",
+      projectId: "catatanvirgo-dbe55",
+      storageBucket: "catatanvirgo-dbe55.firebasestorage.app",
+      messagingSenderId: "454030613940",
+      appId: "1:454030613940:web:4302930fc1bde41774a6e1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    document.getElementById("formSandi").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const baru = document.getElementById("baru").value.trim();
+
+      if (!baru) return alert("Sandi tidak boleh kosong!");
+
+      await setDoc(doc(db, "pengaturan", "admin"), {
+        password: baru
+      }, { merge: true });
+
+      alert("Sandi berhasil diperbarui!");
+      document.getElementById("baru").value = "";
+    });
+  </script>
+</body>
+</html>
