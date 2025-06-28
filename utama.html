@@ -7,6 +7,7 @@
   <link rel="icon" href="logo.png" type="image/png">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     html, body {
       height: 100%;
       font-family: sans-serif;
@@ -42,10 +43,23 @@
       transition: transform 0.3s ease;
     }
 
-    #navKanan { right: 0; transform: translateX(100%) translateY(-50%); }
-    #navKanan.open { transform: translateX(0) translateY(-50%); }
-    #navKiri { left: 0; transform: translateX(-100%) translateY(-50%); }
-    #navKiri.open { transform: translateX(0) translateY(-50%); }
+    #navKanan {
+      right: 0;
+      transform: translateX(100%) translateY(-50%);
+    }
+
+    #navKanan.open {
+      transform: translateX(0) translateY(-50%);
+    }
+
+    #navKiri {
+      left: 0;
+      transform: translateX(-100%) translateY(-50%);
+    }
+
+    #navKiri.open {
+      transform: translateX(0) translateY(-50%);
+    }
 
     .nav-button {
       background: none;
@@ -80,50 +94,257 @@
       background: #fff;
       color: #222;
       border-radius: 10px;
-      padding: 1.5rem;
+      padding: 1.2rem;
       margin-bottom: 1.5rem;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-      transition: transform 0.2s;
       cursor: pointer;
+      transition: transform 0.2s;
+      position: relative;
     }
 
     .card:hover { transform: scale(1.01); }
 
+    .card h3 {
+      margin: 0.2rem 0;
+      font-size: 1.2rem;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .card small {
+      color: #555;
+      display: block;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+
     #liveCard p {
       font-size: 1.5rem;
-      font-weight: bold;
       text-align: center;
-      margin: 0;
+      font-weight: bold;
+    }
+
+    .cekPilih {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      transform: scale(1.4);
+      display: none;
+    }
+
+    .card.pilih-mode .cekPilih {
+      display: inline-block;
+    }
+
+    #floatingBar {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(20, 20, 20, 0.95);
+      padding: 10px 16px;
+      color: white;
+      z-index: 999;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(255,255,255,0.2);
+    }
+
+    #floatingBar button {
+      background: crimson;
+      border: none;
+      padding: 6px 12px;
+      color: white;
+      font-weight: bold;
+      border-radius: 4px;
+    }
+
+    #floatingBar .batal {
+      background: gray;
+      margin-left: 10px;
     }
   </style>
 </head>
 <body>
-
-  <!-- Swipe Area -->
   <div id="swipe-left" class="swipe-area"></div>
   <div id="swipe-right" class="swipe-area"></div>
   <div class="overlay" id="overlay"></div>
 
-  <!-- Navigasi Kanan -->
   <nav class="vertical-nav" id="navKanan">
+    <button class="nav-button" onclick="aktifkanModePilih()">📝 Pilih</button>
     <button class="nav-button" onclick="location.href='tambah.html'">➕ Tambah</button>
     <button class="nav-button" onclick="location.href='kelola-live.html'">📡 Kelola Live</button>
     <button class="nav-button" onclick="sessionStorage.clear(); location.href='index.html'">🚪 Logout</button>
   </nav>
 
-  <!-- Navigasi Kiri (Kategori) -->
   <nav class="vertical-nav" id="navKiri"></nav>
 
-  <!-- Konten -->
   <div class="container">
     <section id="catatanLive">
       <div class="card" id="liveCard"><h3>Memuat...</h3></div>
     </section>
-
     <section id="daftarCatatan" style="display: none;">
       <div id="listSemuaCatatan"></div>
     </section>
   </div>
+
+  <div id="floatingBar">
+    <span id="jumlahDipilih">0 dipilih</span>
+    <div>
+      <button onclick="hapusDipilih()">🗑 Hapus</button>
+      <button class="batal" onclick="batalPilih()">Batal</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const app = initializeApp({
+      apiKey: "AIzaSyB59jxyeAOLp4bLJdBF4R0-bw7NnieEzes",
+      authDomain: "catatanvirgo-dbe55.firebaseapp.com",
+      projectId: "catatanvirgo-dbe55",
+      storageBucket: "catatanvirgo-dbe55.appspot.com",
+      messagingSenderId: "454030613940",
+      appId: "1:454030613940:web:4302930fc1bde41774a6e1"
+    });
+
+    const db = getFirestore(app);
+
+    const liveCard = document.getElementById("liveCard");
+    let liveIndex = 0;
+    let liveData = [];
+
+    async function loadLiveCards() {
+      const snap = await getDocs(collection(db, "live"));
+      liveData = snap.docs.map(d => d.data().isi || "Tanpa isi");
+      if (liveData.length === 0) {
+        liveCard.innerHTML = "<p><em>Belum ada catatan live.</em></p>";
+      } else {
+        showLiveCard();
+        setInterval(() => {
+          liveIndex = (liveIndex + 1) % liveData.length;
+          showLiveCard();
+        }, 5000);
+      }
+    }
+
+    function showLiveCard() {
+      liveCard.innerHTML = `<p>${liveData[liveIndex]}</p>`;
+    }
+
+    async function loadKategori() {
+      const snap = await getDocs(collection(db, "catatan"));
+      const raw = snap.docs.map(d => (d.data().kategori || "Umum").trim().toLowerCase());
+      const unik = [...new Set(raw)].sort();
+      const nav = document.getElementById("navKiri");
+      nav.innerHTML = "";
+      unik.forEach(k => {
+        const btn = document.createElement("button");
+        btn.className = "nav-button";
+        btn.textContent = k.charAt(0).toUpperCase() + k.slice(1);
+        btn.onclick = () => tampilkanKategori(k);
+        nav.appendChild(btn);
+      });
+    }
+
+    async function tampilkanKategori(kategori) {
+      const q = query(collection(db, "catatan"), where("kategori", "==", kategori));
+      const snap = await getDocs(q);
+      const list = document.getElementById("listSemuaCatatan");
+      document.getElementById("catatanLive").style.display = "none";
+      document.getElementById("daftarCatatan").style.display = "block";
+      list.innerHTML = "";
+
+      snap.forEach(doc => {
+        const data = doc.data();
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <input type="checkbox" class="cekPilih" onchange="togglePilih('${doc.id}', this)">
+          <small>${data.kategori || "Umum"}</small>
+          <h3>${data.judul || "(Tanpa Judul)"}</h3>
+        `;
+
+        let timer;
+        div.ontouchstart = () => {
+          timer = setTimeout(() => {
+            aktifkanModePilih();
+            const cb = div.querySelector(".cekPilih");
+            cb.checked = true;
+            togglePilih(doc.id, cb);
+          }, 500);
+        };
+        div.ontouchend = () => clearTimeout(timer);
+        div.ontouchmove = () => clearTimeout(timer);
+
+        div.onclick = () => {
+          if (modePilih) {
+            const cb = div.querySelector(".cekPilih");
+            cb.checked = !cb.checked;
+            togglePilih(doc.id, cb);
+          } else {
+            location.href = `detail.html?id=${doc.id}`;
+          }
+        };
+
+        list.appendChild(div);
+      });
+    }
+
+    let modePilih = false;
+    let dipilih = new Set();
+
+    function aktifkanModePilih() {
+      if (document.getElementById("daftarCatatan").style.display === "none") {
+        alert("Pilih kategori terlebih dahulu.");
+        return;
+      }
+      modePilih = true;
+      document.getElementById("floatingBar").style.display = "flex";
+      document.querySelectorAll("#listSemuaCatatan .card").forEach(c => c.classList.add("pilih-mode"));
+    }
+
+    function batalPilih() {
+      modePilih = false;
+      dipilih.clear();
+      document.getElementById("floatingBar").style.display = "none";
+      document.querySelectorAll("#listSemuaCatatan .card").forEach(c => {
+        c.classList.remove("pilih-mode");
+        const cb = c.querySelector(".cekPilih");
+        if (cb) cb.checked = false;
+      });
+    }
+
+    async function hapusDipilih() {
+      if (!confirm(`Hapus ${dipilih.size} catatan?`)) return;
+      for (const id of dipilih) {
+        await deleteDoc(doc(db, "catatan", id));
+      }
+      location.reload();
+    }
+
+    function togglePilih(id, cb) {
+      if (cb.checked) dipilih.add(id);
+      else dipilih.delete(id);
+      document.getElementById("jumlahDipilih").textContent = `${dipilih.size} dipilih`;
+      if (dipilih.size === 0) batalPilih();
+    }
+
+    window.togglePilih = togglePilih;
+    window.hapusDipilih = hapusDipilih;
+    window.batalPilih = batalPilih;
+    window.aktifkanModePilih = aktifkanModePilih;
+
+    // init
+    loadLiveCards();
+    loadKategori();
+
+    if (sessionStorage.getItem("aksesAdmin") !== "true") {
+      location.href = "index.html";
+    }
+  </script>
 
   <script>
     const overlay = document.getElementById("overlay");
@@ -146,122 +367,23 @@
       overlay.classList.remove("active");
     }
 
-    overlay.addEventListener("click", closeNavs);
+    overlay.onclick = closeNavs;
 
-    let touchStartX = null;
     document.addEventListener("touchstart", e => {
-      touchStartX = e.touches[0].clientX;
+      window._touchX = e.touches[0].clientX;
     });
+
     document.addEventListener("touchend", e => {
       const endX = e.changedTouches[0].clientX;
-      if (touchStartX < 40 && endX > touchStartX + 30) openNavKiri();
-      else if (touchStartX > window.innerWidth - 40 && endX < touchStartX - 30) openNavKanan();
-      touchStartX = null;
+      if (window._touchX < 40 && endX > window._touchX + 30) openNavKiri();
+      else if (window._touchX > window.innerWidth - 40 && endX < window._touchX - 30) openNavKanan();
     });
 
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowRight") openNavKiri();
-      if (e.key === "ArrowLeft") openNavKanan();
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowLeft") openNavKiri();
+      else if (e.key === "ArrowRight") openNavKanan();
+      else if (e.key === "Escape") closeNavs();
     });
-
-    if (sessionStorage.getItem("aksesAdmin") !== "true") {
-      location.href = "index.html";
-    }
-  </script>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-      getFirestore, collection, getDocs, query, where
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyB59jxyeAOLp4bLJdBF4R0-bw7NnieEzes",
-      authDomain: "catatanvirgo-dbe55.firebaseapp.com",
-      projectId: "catatanvirgo-dbe55",
-      storageBucket: "catatanvirgo-dbe55.appspot.com",
-      messagingSenderId: "454030613940",
-      appId: "1:454030613940:web:4302930fc1bde41774a6e1"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    async function loadKategori() {
-      const snap = await getDocs(collection(db, "catatan"));
-      const raw = [];
-
-      snap.forEach(doc => {
-        const kategori = (doc.data().kategori || "Umum").trim().toLowerCase();
-        raw.push(kategori);
-      });
-
-      const unik = [...new Set(raw)].sort();
-      unik.forEach(k => {
-        const btn = document.createElement("button");
-        btn.className = "nav-button";
-        btn.textContent = k.charAt(0).toUpperCase() + k.slice(1);
-        btn.onclick = () => tampilkanKategori(k);
-        document.getElementById("navKiri").appendChild(btn);
-      });
-    }
-
-    async function tampilkanLiveBergiliran() {
-      const q = collection(db, "live");
-      const snap = await getDocs(q);
-      const liveCard = document.getElementById("liveCard");
-
-      const daftar = [];
-      snap.forEach(doc => {
-        const data = doc.data();
-        if (data.isi) daftar.push(data.isi);
-      });
-
-      if (daftar.length === 0) {
-        liveCard.innerHTML = "<p><em>Belum ada catatan live.</em></p>";
-        return;
-      }
-
-      let indeks = 0;
-      function tampilkan() {
-        liveCard.innerHTML = `<p>${daftar[indeks]}</p>`;
-        indeks = (indeks + 1) % daftar.length;
-      }
-
-      tampilkan();
-      setInterval(tampilkan, 5000);
-    }
-
-    async function tampilkanKategori(kategori) {
-      const q = query(collection(db, "catatan"), where("kategori", "==", kategori));
-      const snap = await getDocs(q);
-      const listDiv = document.getElementById("listSemuaCatatan");
-
-      document.getElementById("catatanLive").style.display = "none";
-      document.getElementById("daftarCatatan").style.display = "block";
-      listDiv.innerHTML = "";
-
-      if (snap.empty) {
-        listDiv.innerHTML = "<p><em>Tidak ada catatan untuk kategori ini.</em></p>";
-        return;
-      }
-
-      snap.forEach(doc => {
-        const data = doc.data();
-        const div = document.createElement("div");
-        div.className = "card";
-        div.innerHTML = `
-          <small>${data.kategori || "Umum"}</small>
-          <h3>${data.judul || "(Tanpa Judul)"}</h3>
-        `;
-        div.onclick = () => location.href = `detail.html?id=${doc.id}`;
-        listDiv.appendChild(div);
-      });
-    }
-
-    // jalankan awal
-    loadKategori();
-    tampilkanLiveBergiliran();
   </script>
 </body>
 </html>
