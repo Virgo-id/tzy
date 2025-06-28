@@ -3,233 +3,174 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Virgo</title>
+  <title>Virgo Admin</title>
   <link rel="icon" href="logo.png" type="image/png">
   <style>
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: system-ui, sans-serif;
-      background: url('1.gif') no-repeat center center fixed;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      font-family: sans-serif;
+      background: url('1.png') no-repeat center center fixed;
       background-size: cover;
       color: white;
-      display: flex;
-      min-height: 100vh;
+      overflow-x: hidden;
     }
 
     .overlay {
-      background: rgba(0,0,0,0.4);
+      display: none;
       position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 900;
+      transition: opacity 0.3s ease;
     }
 
-    /* 🔵 SIDEBAR NEON BIRU */
-    .sidebar {
+    .overlay.active { display: block; opacity: 1; }
+
+    nav.vertical-nav {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 240px;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(10px);
-      border-right: 2px solid #00ffe0;
-      box-shadow: inset 0 0 10px #00ffe088;
-      color: #c9d1d9;
+      top: 50%;
+      transform: translateY(-50%);
+      max-height: 90vh;
       display: flex;
       flex-direction: column;
-      padding-top: 2rem;
+      gap: 12px;
+      padding: 20px 16px;
+      overflow-y: auto;
       z-index: 1000;
+      background: none;
+      transition: transform 0.3s ease;
     }
 
-    .sidebar button {
-      padding: 1rem;
-      background: transparent;
+    #navKanan { right: 0; transform: translateX(100%) translateY(-50%); }
+    #navKanan.open { transform: translateX(0) translateY(-50%); }
+    #navKiri { left: 0; transform: translateX(-100%) translateY(-50%); }
+    #navKiri.open { transform: translateX(0) translateY(-50%); }
+
+    .nav-button {
+      background: none;
       border: none;
-      color: #f0f0f0;
-      text-align: left;
+      font-size: 16px;
+      color: white;
       cursor: pointer;
-      font-size: 1rem;
-      border-bottom: 1px solid #21262d;
+      padding: 6px 0;
+      height: 48px;
+      line-height: 48px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
     }
 
-    /* Hapus efek hover */
-    .sidebar button:hover {
-      background: transparent;
-      color: #f0f0f0;
-      transform: none;
+    .swipe-area {
+      position: fixed;
+      top: 0;
+      width: 40px;
+      height: 100vh;
+      z-index: 950;
     }
+
+    #swipe-left { left: 0; }
+    #swipe-right { right: 0; }
 
     .container {
-      margin-left: 240px;
-      flex: 1;
-      display: flex;
-      justify-content: center;
       padding: 2rem 1rem;
-    }
-
-    main {
-      width: 100%;
       max-width: 800px;
-    }
-
-    h2 {
-      font-size: 1.3rem;
-      margin-bottom: 0.5rem;
-      text-align: center;
+      margin: 0 auto;
     }
 
     .card {
-      background: rgba(0, 0, 0, 0.6);
-      color: #e0f7ff;
+      background: #fff;
+      color: #222;
       border-radius: 10px;
-      padding: 1.2rem;
+      padding: 1.5rem;
       margin-bottom: 1.5rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
       transition: transform 0.2s;
     }
 
-    .card:hover {
-      transform: scale(1.01);
-    }
+    .card:hover { transform: scale(1.01); }
 
-    .card h3 {
-      margin: 0;
-      font-size: 1.2rem;
+    #liveCard p {
+      font-size: 1.5rem;
+      font-weight: bold;
       text-align: center;
-    }
-
-    .card small {
-      display: block;
-      margin-bottom: 0.3rem;
-      color: #aaa;
-      font-size: 0.9rem;
-      text-align: left;
-    }
-
-    .card p {
-      font-size: 1rem;
-      line-height: 1.5;
-      color: #aaf8ff;
-      font-weight: 300;
-    }
-
-    /* 💡 LIVE CARD ANIMASI LED RUSAK */
-    @keyframes glowThenFlicker {
-      0%   { border-color: #00ffe0; box-shadow: 0 0 10px #00ffe0; }
-      20%  { border-color: #00ffe0; box-shadow: 0 0 12px #00ffe0; }
-      40%  { border-color: #00ffe0; box-shadow: 0 0 14px #00ffe0; }
-      50%  { border-color: transparent; box-shadow: none; }
-      55%  { border-color: #00ffe0; box-shadow: 0 0 8px #00ffe0; }
-      60%  { border-color: transparent; box-shadow: none; }
-      65%  { border-color: #00ffe0; box-shadow: 0 0 12px #00ffe0; }
-      80%  { border-color: #00ffe0; box-shadow: 0 0 10px #00ffe0; }
-      100% { border-color: #00ffe0; box-shadow: 0 0 14px #00ffe0; }
-    }
-
-    #liveCard {
-      background: rgba(0, 0, 0, 0.75);
-      color: #00ffe0;
-      font-weight: 300;
-      border: 2px solid #00ffe0;
-      border-radius: 12px;
-      padding: 1.5rem;
-      text-shadow: 0 0 6px #00ffe0;
-      animation: glowThenFlicker 6s infinite;
-    }
-
-    .blok-bawah {
-      margin-top: 600px;
-    }
-
-    .spacer {
-      margin: 10rem 0 2rem;
-      border-top: 1px solid rgba(255,255,255,0.2);
-    }
-
-    select {
-      padding: 0.6rem;
-      border-radius: 6px;
-      border: none;
-      margin-bottom: 1.5rem;
-      font-size: 1rem;
-    }
-
-    @media (max-width: 768px) {
-      .sidebar {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 50px;
-        flex-direction: row;
-        padding: 0;
-        border-top: 1px solid #30363d;
-        box-shadow: 0 -2px 10px rgba(0,0,0,0.4);
-      }
-
-      .sidebar button {
-        flex: 1;
-        text-align: center;
-        font-size: 1.1rem;
-        padding: 0.7rem 0;
-        border-right: 1px solid #21262d;
-        border-bottom: none;
-      }
-
-      .container {
-        margin-left: 0;
-        padding-bottom: 60px;
-      }
-
-      .spacer {
-        margin: 6rem 0 2rem;
-      }
+      margin: 0;
     }
   </style>
 </head>
 <body>
-  <div class="overlay"></div>
-  <div class="sidebar">
-    <button onclick="location.href='tambah.html'">➕ Tambah</button>
-    <button onclick="location.href='kelola-live.html'">⚙️ Kelola Live</button>
-    <button onclick="location.href='sandi.html'">🔒 Sandi</button>
-  </div>
+
+  <!-- Swipe Area -->
+  <div id="swipe-left" class="swipe-area"></div>
+  <div id="swipe-right" class="swipe-area"></div>
+  <div class="overlay" id="overlay"></div>
+
+  <!-- Navigasi Kanan -->
+  <nav class="vertical-nav" id="navKanan">
+
+    <button class="nav-button" onclick="location.href='utama.html'">Beranda</button>
+    <button class="nav-button" onclick="location.href='tambah.html'">Tambah</button>
+    <button class="nav-button" onclick="location.href='kelola-live.html'">Kelola Live</button>
+    <button class="nav-button" onclick="sessionStorage.clear(); location.href='index.html'">Logout</button>
+  </nav>
+
+  <!-- Navigasi Kiri (Kategori) -->
+  <nav class="vertical-nav" id="navKiri"></nav>
+
+  <!-- Konten -->
   <div class="container">
-    <main>
-      <section id="catatanLive">
-        <div class="card" id="liveCard">
-          <h3>Memuat...</h3>
-        </div>
-      </section>
-      <div class="blok-bawah">
-        <div class="spacer"></div>
-        <section id="filter">
-          <select id="kategoriSelect">
-            <option value="semua">Tampilkan Semua</option>
-          </select>
-        </section>
-        <section id="daftarCatatan">
-          <h2>📚 Semua Catatan</h2>
-          <div id="listSemuaCatatan">Memuat...</div>
-        </section>
-      </div>
-    </main>
+    <section id="catatanLive">
+      <div class="card" id="liveCard"><h3>Memuat...</h3></div>
+    </section>
   </div>
+
   <script>
+    const overlay = document.getElementById("overlay");
+    const navKanan = document.getElementById("navKanan");
+    const navKiri = document.getElementById("navKiri");
+
+    function openNavKanan() {
+      navKanan.classList.add("open");
+      overlay.classList.add("active");
+    }
+
+    function openNavKiri() {
+      navKiri.classList.add("open");
+      overlay.classList.add("active");
+    }
+
+    function closeNavs() {
+      navKanan.classList.remove("open");
+      navKiri.classList.remove("open");
+      overlay.classList.remove("active");
+    }
+
+    overlay.addEventListener("click", closeNavs);
+
+    // Hanya swipe, bukan klik
+    let touchStartX = null;
+    document.addEventListener("touchstart", e => {
+      touchStartX = e.touches[0].clientX;
+    });
+    document.addEventListener("touchend", e => {
+      const endX = e.changedTouches[0].clientX;
+      if (touchStartX < 40 && endX > touchStartX + 30) openNavKiri();
+      else if (touchStartX > window.innerWidth - 40 && endX < touchStartX - 30) openNavKanan();
+      touchStartX = null;
+    });
+
+    // Navigasi dengan keyboard (desktop)
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight") openNavKiri();
+      if (e.key === "ArrowLeft") openNavKanan();
+    });
+
     if (sessionStorage.getItem("aksesAdmin") !== "true") {
       location.href = "index.html";
     }
   </script>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-      getFirestore, collection, query, where, getDocs
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB59jxyeAOLp4bLJdBF4R0-bw7NnieEzes",
@@ -243,85 +184,54 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    async function loadCatatanLive() {
-      const q = query(collection(db, "catatan"), where("status", "==", "live"));
+    async function loadKategori() {
+      const snap = await getDocs(collection(db, "catatan"));
+      const raw = [];
+
+      snap.forEach(doc => {
+        const kategori = (doc.data().kategori || "Umum").trim().toLowerCase();
+        raw.push(kategori);
+      });
+
+      const unik = [...new Set(raw)].sort();
+      unik.forEach(k => {
+        const btn = document.createElement("button");
+        btn.className = "nav-button";
+        btn.textContent = k.charAt(0).toUpperCase() + k.slice(1);
+        btn.onclick = () => location.href = `kategori.html?kategori=${k}`;
+        document.getElementById("navKiri").appendChild(btn);
+      });
+    }
+
+    async function tampilkanLiveBergiliran() {
+      const q = collection(db, "live");
       const snap = await getDocs(q);
-      const list = [];
-      snap.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
+      const liveCard = document.getElementById("liveCard");
 
-      let i = 0;
-      const card = document.getElementById("liveCard");
+      const daftar = [];
+      snap.forEach(doc => {
+        const data = doc.data();
+        if (data.isi) daftar.push(data.isi);
+      });
 
+      if (daftar.length === 0) {
+        liveCard.innerHTML = "<p><em>Belum ada catatan live.</em></p>";
+        return;
+      }
+
+      let indeks = 0;
       function tampilkan() {
-        if (list.length === 0) {
-          card.innerHTML = "<p><em>Belum ada catatan live.</em></p>";
-          return;
-        }
-
-        const data = list[i];
-        card.classList.remove("animasi-live");
-        void card.offsetWidth;
-        card.classList.add("animasi-live");
-
-        card.innerHTML = `
-          <p>${data.isi ? data.isi.substring(0, 300) + "..." : "<em>(Tanpa Isi)</em>"}</p>
-        `;
-
-        i = (i + 1) % list.length;
+        liveCard.innerHTML = `<p>${daftar[indeks]}</p>`;
+        indeks = (indeks + 1) % daftar.length;
       }
 
       tampilkan();
-      setInterval(tampilkan, 20000); // ⏱️ tampil tiap 20 detik
+      setInterval(tampilkan, 5000);
     }
 
-    async function loadSemuaCatatan() {
-      const snap = await getDocs(collection(db, "catatan"));
-      const semua = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-      const listDiv = document.getElementById("listSemuaCatatan");
-      const kategoriSelect = document.getElementById("kategoriSelect");
-
-      const kategoriSet = new Set();
-      semua.forEach(c => kategoriSet.add(c.kategori || "Umum"));
-      [...kategoriSet].sort().forEach(k => {
-        const opt = document.createElement("option");
-        opt.value = k;
-        opt.textContent = k;
-        kategoriSelect.appendChild(opt);
-      });
-
-      function tampilkanList(kategoriDipilih) {
-        const filtered = kategoriDipilih === "semua"
-          ? semua
-          : semua.filter(c => (c.kategori || "Umum") === kategoriDipilih);
-
-        if (filtered.length === 0) {
-          listDiv.innerHTML = "<p><em>Tidak ada catatan untuk kategori ini.</em></p>";
-          return;
-        }
-
-        listDiv.innerHTML = "";
-        filtered.forEach((data) => {
-          const div = document.createElement("div");
-          div.className = "card";
-          div.onclick = () => location.href = `detail.html?id=${data.id}`;
-          div.innerHTML = `
-            <small>${data.kategori || "Umum"}</small>
-            <h3>${data.judul || "(Tanpa Judul)"}</h3>
-          `;
-          listDiv.appendChild(div);
-        });
-      }
-
-      kategoriSelect.addEventListener("change", () => {
-        tampilkanList(kategoriSelect.value);
-      });
-
-      tampilkanList("semua");
-    }
-
-    loadCatatanLive();
-    loadSemuaCatatan();
+    // Load awal
+    loadKategori();
+    tampilkanLiveBergiliran();
   </script>
 </body>
 </html>

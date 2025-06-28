@@ -1,64 +1,74 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Virgo</title>
-  <link rel="icon" href="logo.png" type="image/png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kelola Catatan Live</title>
   <style>
     body {
-      margin: 0;
-      font-family: system-ui, sans-serif;
-      background-image: url('1.gif');
+      font-family: sans-serif;
+      background: url('1.png') no-repeat center center fixed;
       background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
+      margin: 0;
+      padding: 2rem 1rem;
       color: white;
     }
 
-    .overlay {
-      background: rgba(0, 0, 0, 0.5);
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-    }
-
-    .topbar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background: rgba(0,0,0,0.7);
-      padding: 1rem;
-      text-align: left;
-      z-index: 100;
-    }
-
-    .topbar button {
-      background: #333;
-      color: white;
-      border: none;
-      padding: 0.6rem 1.2rem;
-      font-size: 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .topbar button:hover {
-      background: #444;
-    }
-
-    main {
-      padding: 5rem 1rem 2rem;
+    .container {
       max-width: 700px;
       margin: auto;
     }
 
-    h2 {
-      font-size: 1.4rem;
+    h1 {
+      text-align: center;
       margin-bottom: 1.5rem;
+    }
+
+    .btn-kembali {
+      display: inline-block;
+      margin-bottom: 1.5rem;
+      padding: 0.6rem 1rem;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+
+    .btn-kembali:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    form {
+      background: rgba(255,255,255,0.1);
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 2rem;
+      backdrop-filter: blur(8px);
+    }
+
+    textarea {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 1rem;
+      padding: 0.8rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      resize: vertical;
+    }
+
+    button {
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      background: #fff;
+      color: #222;
+      cursor: pointer;
     }
 
     .card {
@@ -66,153 +76,104 @@
       color: #222;
       border-radius: 10px;
       padding: 1.2rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
       position: relative;
+      word-break: break-word;
     }
 
-    .card h3 {
-      margin: 0.2rem 0;
-      font-size: 1.1rem;
-    }
-
-    .card small {
-      color: #555;
-      display: block;
-      margin-bottom: 0.5rem;
-    }
-
-    .card p {
-      font-size: 1rem;
-      line-height: 1.5;
-      color: #333;
-    }
-
-    .actions {
+    .hapus-btn {
       position: absolute;
-      bottom: 10px;
+      top: 10px;
       right: 10px;
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .actions button {
-      background: none;
+      background: crimson;
+      color: white;
       border: none;
-      font-size: 1.1rem;
+      border-radius: 5px;
+      padding: 4px 8px;
       cursor: pointer;
-      color: #444;
+      font-size: 0.8rem;
     }
 
-    .actions button:hover {
-      color: #000;
-    }
-
-    @media (max-width: 600px) {
-      .topbar button {
-        padding: 0.5rem 1rem;
-        font-size: 0.9rem;
-      }
-
-      .card {
-        padding: 1rem;
-      }
-
-      .card p {
-        font-size: 0.95rem;
-      }
-
-      .actions {
-        gap: 0.4rem;
-      }
+    .hapus-btn:hover {
+      background: darkred;
     }
   </style>
 </head>
 <body>
 
-  <div class="overlay"></div>
+  <div class="container">
+    <a href="utama.html" class="btn-kembali">← Kembali</a>
+    <h1>Kelola Catatan Live</h1>
 
-  <div class="topbar">
-    <button onclick="location.href='utama.html'">← Kembali</button>
+    <form id="formLive">
+      <textarea id="isi" rows="5" placeholder="Tulis isi catatan..." required></textarea>
+      <button type="submit">➕ Tambahkan</button>
+    </form>
+
+    <div id="daftarLive">Memuat catatan live...</div>
   </div>
-
-  <main>
-    <h2>🌟 Daftar Catatan Live</h2>
-    <div id="daftarLive">Bismillah...</div>
-  </main>
-
-  <script>
-    if (sessionStorage.getItem("aksesAdmin") !== "true") {
-      location.href = "index.html";
-    }
-  </script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
-      getFirestore, collection, query, where, getDocs,
-      doc, deleteDoc, updateDoc
+      getFirestore, collection, addDoc, getDocs, deleteDoc, doc
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB59jxyeAOLp4bLJdBF4R0-bw7NnieEzes",
       authDomain: "catatanvirgo-dbe55.firebaseapp.com",
       projectId: "catatanvirgo-dbe55",
-      storageBucket: "catatanvirgo-dbe55.firebasestorage.app",
+      storageBucket: "catatanvirgo-dbe55.appspot.com",
       messagingSenderId: "454030613940",
       appId: "1:454030613940:web:4302930fc1bde41774a6e1"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const liveRef = collection(db, "live");
 
-    async function loadLiveCatatan() {
-      const container = document.getElementById("daftarLive");
-      const q = query(collection(db, "catatan"), where("status", "==", "live"));
-      const snap = await getDocs(q);
+    const form = document.getElementById("formLive");
+    const daftarLive = document.getElementById("daftarLive");
 
+    async function loadLive() {
+      daftarLive.innerHTML = "Memuat catatan live...";
+      const snap = await getDocs(liveRef);
       if (snap.empty) {
-        container.innerHTML = "<p><em>Tidak ada catatan live.</em></p>";
+        daftarLive.innerHTML = "<p><em>Belum ada catatan live.</em></p>";
         return;
       }
 
-      container.innerHTML = "";
+      daftarLive.innerHTML = "";
       snap.forEach(docSnap => {
         const data = docSnap.data();
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <small>${data.kategori || "Umum"}</small>
-          <h3>${data.judul || "(Tanpa Judul)"}</h3>
-          <p>${data.isi?.substring(0, 150) || ""}</p>
-          <div class="actions">
-            <button onclick="editCatatan('${docSnap.id}')">✏️</button>
-            <button onclick="hapusCatatan('${docSnap.id}')">🗑️</button>
-            <button onclick="hapusDariLive('${docSnap.id}')">❌</button>
-          </div>
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <p>${data.isi || "<em>(Kosong)</em>"}</p>
+          <button class="hapus-btn">Hapus</button>
         `;
-        container.appendChild(card);
+        div.querySelector(".hapus-btn").onclick = async () => {
+          if (confirm("Hapus catatan ini?")) {
+            await deleteDoc(doc(db, "live", docSnap.id));
+            loadLive();
+          }
+        };
+        daftarLive.appendChild(div);
       });
     }
 
-    window.editCatatan = (id) => {
-      location.href = `edit.html?id=${id}`;
-    }
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const isi = form.isi.value.trim();
+      if (!isi) return alert("Isi tidak boleh kosong.");
 
-    window.hapusCatatan = async (id) => {
-      if (!confirm("Yakin ingin menghapus catatan ini?")) return;
-      await deleteDoc(doc(db, "catatan", id));
-      alert("Catatan dihapus.");
-      loadLiveCatatan();
-    }
+      await addDoc(liveRef, { isi });
+      form.reset();
+      loadLive();
+    });
 
-    window.hapusDariLive = async (id) => {
-      await updateDoc(doc(db, "catatan", id), { status: "" });
-      alert("Status live dihapus.");
-      loadLiveCatatan();
-    }
-
-    loadLiveCatatan();
+    loadLive();
   </script>
 
 </body>
