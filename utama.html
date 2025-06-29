@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Virgo Admin</title>
   <link rel="icon" href="logo.png" type="image/png">
-  <style>
+<style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
@@ -164,6 +164,39 @@
       background: gray;
       margin-left: 10px;
     }
+
+    /* === RESPONSIVE: Mobile Text Smaller === */
+@media (max-width: 600px) {
+  body, .nav-button, .card h3, .card small, #liveCard p, #floatingBar, #floatingBar button {
+    font-size: 10px !important;
+  }
+
+  .card {
+    padding: 0.6rem;
+  }
+
+  .nav-button {
+    height: 32px;
+    line-height: 32px;
+  }
+
+  #liveCard p {
+    font-size: 0.85rem !important;
+  }
+
+  .card h3 {
+    font-size: 0.9rem !important;
+  }
+
+  .card small {
+    font-size: 0.65rem !important;
+  }
+
+  #floatingBar button {
+    padding: 3px 6px;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -216,19 +249,30 @@
     let liveIndex = 0;
     let liveData = [];
 
-    async function loadLiveCards() {
-      const snap = await getDocs(collection(db, "live"));
-      liveData = snap.docs.map(d => d.data().isi || "Tanpa isi");
-      if (liveData.length === 0) {
-        liveCard.innerHTML = "<p><em>Belum ada catatan live.</em></p>";
-      } else {
-        showLiveCard();
-        setInterval(() => {
-          liveIndex = (liveIndex + 1) % liveData.length;
-          showLiveCard();
-        }, 5000);
-      }
-    }
+   async function loadLiveCards() {
+  const snap = await getDocs(collection(db, "live"));
+  liveData = snap.docs.map(d => d.data().isi || "Tanpa isi");
+
+  if (liveData.length === 0) {
+    liveCard.innerHTML = "<p><em>Belum ada catatan live.</em></p>";
+  } else {
+    shuffleArray(liveData); // <- Acak array
+    showLiveCard();
+    setInterval(() => {
+      liveIndex = (liveIndex + 1) % liveData.length;
+      showLiveCard();
+    }, 50000);
+  }
+}
+
+// Fungsi untuk mengacak array (Fisher-Yates Shuffle)
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
 
     function showLiveCard() {
       liveCard.innerHTML = `<p>${liveData[liveIndex]}</p>`;
@@ -341,9 +385,6 @@
     loadLiveCards();
     loadKategori();
 
-    if (sessionStorage.getItem("aksesAdmin") !== "true") {
-      location.href = "index.html";
-    }
   </script>
 
   <script>
@@ -385,5 +426,11 @@
       else if (e.key === "Escape") closeNavs();
     });
   </script>
+
+<script>
+if (sessionStorage.getItem("aksesAdmin") !== "true") {
+  location.href = "index.html";
+}
+</script>
 </body>
 </html>
