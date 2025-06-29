@@ -73,6 +73,12 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.3);
     }
 
+.nav-button:focus {
+  outline: 2px solid white;
+  background-color: rgba(255,255,255,0.2);
+}
+
+
     .swipe-area {
       position: fixed;
       top: 0;
@@ -121,7 +127,6 @@
     #liveCard p {
       font-size: 1.5rem;
       text-align: center;
-      font-weight: bold;
     }
 
     .cekPilih {
@@ -428,9 +433,91 @@ function shuffleArray(arr) {
   </script>
 
 <script>
+  const overlay = document.getElementById("overlay");
+  const navKanan = document.getElementById("navKanan");
+  const navKiri = document.getElementById("navKiri");
+
+  function openNavKanan() {
+    navKanan.classList.add("open");
+    overlay.classList.add("active");
+    focusNav(navKanan);
+  }
+
+  function openNavKiri() {
+    navKiri.classList.add("open");
+    overlay.classList.add("active");
+    focusNav(navKiri);
+  }
+
+  function closeNavs() {
+    navKanan.classList.remove("open");
+    navKiri.classList.remove("open");
+    overlay.classList.remove("active");
+  }
+
+  function focusNav(navEl) {
+    const buttons = navEl.querySelectorAll(".nav-button");
+    if (buttons.length > 0) buttons[0].focus();
+  }
+
+  overlay.onclick = closeNavs;
+
+  // Swipe gesture untuk buka nav kiri/kanan
+  document.addEventListener("touchstart", e => {
+    window._touchX = e.touches[0].clientX;
+  });
+
+  document.addEventListener("touchend", e => {
+    const endX = e.changedTouches[0].clientX;
+    if (window._touchX < 40 && endX > window._touchX + 30) openNavKiri();
+    else if (window._touchX > window.innerWidth - 40 && endX < window._touchX - 30) openNavKanan();
+  });
+
+  // Navigasi keyboard
+  document.addEventListener("keydown", e => {
+    const kananTerbuka = navKanan.classList.contains("open");
+    const kiriTerbuka = navKiri.classList.contains("open");
+    const aktif = kananTerbuka ? navKanan : kiriTerbuka ? navKiri : null;
+
+    if (e.key === "ArrowLeft") {
+      openNavKiri();
+      return;
+    }
+    if (e.key === "ArrowRight") {
+      openNavKanan();
+      return;
+    }
+    if (e.key === "Escape" || e.key === "Backspace") {
+      if (kananTerbuka || kiriTerbuka) {
+        closeNavs();
+        e.preventDefault();
+      }
+      return;
+    }
+
+    if (!aktif) return;
+
+    const buttons = Array.from(aktif.querySelectorAll(".nav-button"));
+    const current = document.activeElement;
+    const idx = buttons.indexOf(current);
+
+    if (e.key === "ArrowDown" && idx !== -1 && idx < buttons.length - 1) {
+      e.preventDefault();
+      buttons[idx + 1].focus();
+    } else if (e.key === "ArrowUp" && idx > 0) {
+      e.preventDefault();
+      buttons[idx - 1].focus();
+    } else if (e.key === "Enter" && idx !== -1) {
+      current.click();
+    }
+  });
+</script>
+
+<script>
 if (sessionStorage.getItem("aksesAdmin") !== "true") {
   location.href = "index.html";
 }
 </script>
+
 </body>
 </html>
