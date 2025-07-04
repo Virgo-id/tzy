@@ -16,10 +16,7 @@
       --shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
 
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       background: var(--bg);
@@ -55,22 +52,23 @@
       position: absolute;
       top: 44px;
       right: 14px;
-      background: transparent;
+      background: #1a1a1a;
       border-radius: var(--radius);
       z-index: 10;
       min-width: 120px;
-
-      /* animasi lembut */
       opacity: 0;
       transform: translateY(-5px);
       transition: opacity 0.2s ease, transform 0.2s ease;
-      pointer-events: none;
     }
 
     .menu-popup.show {
       opacity: 1;
       transform: translateY(0);
       pointer-events: auto;
+    }
+
+    .menu-popup:not(.show) {
+      pointer-events: none;
     }
 
     .menu-popup a {
@@ -82,9 +80,7 @@
       text-align: right;
     }
 
-    .menu-popup a:hover {
-      background: #2a2a2a;
-    }
+    .menu-popup a:hover { background: #2a2a2a; }
 
     .container {
       padding: 20px 16px;
@@ -108,16 +104,8 @@
       transition: background 0.3s;
     }
 
-    textarea:focus {
-      outline: none;
-      background: #262626;
-    }
-
-    .aksi {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 10px;
-    }
+    textarea:focus { outline: none; background: #262626; }
+    .aksi { display: flex; justify-content: flex-end; margin-top: 10px; }
 
     button {
       padding: 8px 14px;
@@ -131,15 +119,9 @@
       cursor: pointer;
     }
 
-    button:active {
-      background: var(--button-hover);
-    }
+    button:active { background: var(--button-hover); }
 
-    ul {
-      list-style: none;
-      padding: 0;
-      margin-top: 24px;
-    }
+    ul { list-style: none; padding: 0; margin-top: 24px; }
 
     li {
       position: relative;
@@ -155,11 +137,7 @@
       gap: 8px;
     }
 
-    li span {
-      white-space: pre-wrap;
-      word-break: break-word;
-      flex-grow: 1;
-    }
+    li span { white-space: pre-wrap; word-break: break-word; flex-grow: 1; }
 
     li button {
       background: none;
@@ -168,12 +146,9 @@
       font-size: 16px;
       cursor: pointer;
       padding: 4px;
-      align-self: flex-start;
     }
 
-    li button:hover {
-      color: #f87171;
-    }
+    li button:hover { color: #f87171; }
   </style>
 </head>
 <body>
@@ -184,8 +159,21 @@
       <a href="utama.html">Beranda</a>
       <a href="catatan.html">Catatan</a>
       <a href="dokumen.html">Dokumen</a>
+      <a href="#" onclick="toggleLabelPopup(event)">Label</a>
     </div>
   </header>
+
+  <!-- Popup Label -->
+  <div class="menu-popup" id="labelPopup" style="right: 140px; min-width: 160px;">
+    <div style="padding: 10px; background: #1a1a1a; border-radius: var(--radius);">
+      <div style="margin-bottom: 8px; font-weight: bold;">Kelola Label</div>
+      <div style="display: flex; gap: 4px;">
+        <input type="text" id="inputLabel" placeholder="Label baru..." style="flex:1; font-size:13px; padding:4px; background:#2a2a2a; border:none; color:white; border-radius:var(--radius);">
+        <button onclick="tambahLabel()" style="font-size:13px; padding:4px 8px;">Tambah</button>
+      </div>
+      <ul id="daftarLabel" style="margin-top: 10px; max-height: 150px; overflow-y: auto;"></ul>
+    </div>
+  </div>
 
   <div class="container">
     <textarea id="inputCatatan" placeholder="Tulis catatan..."></textarea>
@@ -219,22 +207,20 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const catatanRef = ref(db, 'daftarCatatan');
+    const labelRef = ref(db, 'daftarLabel');
 
     const input = document.getElementById("inputCatatan");
     const daftar = document.getElementById("daftarCatatan");
+    const inputLabel = document.getElementById("inputLabel");
+    const daftarLabel = document.getElementById("daftarLabel");
 
-    // Fokus langsung saat halaman dibuka
-    window.addEventListener("load", () => {
-      input.focus();
-    });
+    window.addEventListener("load", () => input.focus());
 
-    // Auto-grow textarea
     input.addEventListener('input', function () {
       this.style.height = 'auto';
       this.style.height = (this.scrollHeight) + 'px';
     });
 
-    // Tambah catatan
     window.tambahCatatan = function () {
       const teks = input.value.trim();
       if (teks !== "") {
@@ -245,48 +231,103 @@
       }
     };
 
-    // Tampilkan catatan
     onChildAdded(catatanRef, (data) => {
       const item = document.createElement("li");
       item.setAttribute("data-id", data.key);
       item.innerHTML = `
         <span>${data.val()}</span>
-        <button onclick="hapusCatatan('${data.key}')">🗑</button>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; margin-left:auto; gap:4px;">
+          <button onclick="hapusCatatan('${data.key}')">🗑</button>
+          <select onchange="pindahKeLabel('${data.key}', this.value)" style="font-size:12px; padding:2px 4px; background:#2a2a2a; color:white; border:none; border-radius:6px;">
+            <option value="">Label</option>
+          </select>
+        </div>
       `;
       daftar.appendChild(item);
+
+      const select = item.querySelector("select");
+      onChildAdded(labelRef, (label) => {
+        const opt = document.createElement("option");
+        opt.value = label.key;
+        opt.textContent = label.val();
+        select.appendChild(opt);
+      });
     });
 
-    // Hapus catatan
     window.hapusCatatan = function (id) {
       const itemRef = ref(db, `daftarCatatan/${id}`);
       remove(itemRef);
     };
 
-    // Hapus dari tampilan
     onChildRemoved(catatanRef, (data) => {
       const item = document.querySelector(`li[data-id="${data.key}"]`);
       if (item) item.remove();
     });
 
-    // Toggle menu
     window.toggleMenu = function () {
-      const menu = document.getElementById("menuPopup");
-      menu.classList.toggle("show");
+      document.getElementById("menuPopup").classList.toggle("show");
     };
 
-    // Tutup menu jika klik di luar
+    window.toggleLabelPopup = function (event) {
+      event.preventDefault();
+      document.getElementById("labelPopup").classList.toggle("show");
+    };
+
     document.addEventListener("click", function (e) {
       const menu = document.getElementById("menuPopup");
       const button = document.querySelector(".menu-btn");
+      const labelPopup = document.getElementById("labelPopup");
+      const labelTrigger = document.querySelector('a[onclick^="toggleLabelPopup"]');
+
       if (!menu.contains(e.target) && !button.contains(e.target)) {
         menu.classList.remove("show");
       }
+      if (!labelPopup.contains(e.target) && !labelTrigger.contains(e.target)) {
+        labelPopup.classList.remove("show");
+      }
     });
+
+    window.tambahLabel = function () {
+      const teks = inputLabel.value.trim();
+      if (teks !== "") {
+        push(labelRef, teks);
+        inputLabel.value = "";
+      }
+    };
+
+    onChildAdded(labelRef, (data) => {
+      const item = document.createElement("li");
+      item.setAttribute("data-id", data.key);
+      item.style.display = "flex";
+      item.style.justifyContent = "space-between";
+      item.style.alignItems = "center";
+      item.style.padding = "4px 0";
+      item.style.fontSize = "13px";
+      item.innerHTML = `
+        <a href="label.html?id=${data.key}" style="color: white; text-decoration: none;">${data.val()}</a>
+        <button onclick="hapusLabel('${data.key}')" style="color:#888;">🗑</button>
+      `;
+      daftarLabel.appendChild(item);
+    });
+
+    window.hapusLabel = function (id) {
+      const itemRef = ref(db, `daftarLabel/${id}`);
+      remove(itemRef);
+    };
+
+    onChildRemoved(labelRef, (data) => {
+      const item = document.querySelector(`#daftarLabel li[data-id="${data.key}"]`);
+      if (item) item.remove();
+    });
+
+    window.pindahKeLabel = function (catatanId, labelId) {
+      if (!labelId) return;
+      const item = document.querySelector(`li[data-id="${catatanId}"]`);
+      const teks = item.querySelector("span").textContent;
+      const labelCatatanRef = ref(db, `catatanLabel/${labelId}`);
+      push(labelCatatanRef, teks);
+      remove(ref(db, `daftarCatatan/${catatanId}`));
+    };
   </script>
-<script>
-  if (sessionStorage.getItem("aksesAdmin") !== "true") {
-    location.href = "index.html";
-  }
-</script>
 </body>
 </html>

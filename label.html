@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Label</title>
+  <style>
+    :root {
+      --bg: #121212;
+      --text: #f1f1f1;
+      --item-bg: #1a1a1a;
+      --shadow: 0 2px 8px rgba(0,0,0,0.3);
+      --radius: 10px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', sans-serif;
+    }
+    header {
+      background: #3b82f6;
+      padding: 8px 14px;
+      height: 44px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      box-shadow: var(--shadow);
+    }
+    .kembali {
+      font-size: 14px;
+      color: white;
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 4px 8px;
+      border-radius: var(--radius);
+    }
+    .container {
+      padding: 16px;
+      max-width: 600px;
+      margin: auto;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 16px;
+    }
+    li {
+      background: var(--item-bg);
+      margin-bottom: 10px;
+      padding: 12px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    li span {
+      flex-grow: 1;
+      word-break: break-word;
+    }
+    li button {
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    li button:hover {
+      color: #f87171;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div id="judulLabel">Label</div>
+    <a href="catatan.html" class="kembali">← Kembali</a>
+  </header>
+
+  <div class="container">
+    <ul id="daftarCatatan"></ul>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getDatabase,
+      ref,
+      onChildAdded,
+      onChildRemoved,
+      remove,
+      get,
+      child
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAXsUMm-JQfvoGNaXemrj1Z6ZEyvtSn-pw",
+      authDomain: "virgo-c8272.firebaseapp.com",
+      databaseURL: "https://virgo-c8272-default-rtdb.firebaseio.com",
+      projectId: "virgo-c8272",
+      storageBucket: "virgo-c8272.appspot.com",
+      messagingSenderId: "387259252172",
+      appId: "1:387259252172:web:25fbec736d94086c6af169"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const params = new URLSearchParams(window.location.search);
+    const labelId = params.get("id");
+
+    const daftar = document.getElementById("daftarCatatan");
+    const judulLabel = document.getElementById("judulLabel");
+
+    // Ambil nama label
+    get(child(ref(db), `daftarLabel/${labelId}`)).then(snapshot => {
+      if (snapshot.exists()) {
+        judulLabel.textContent = snapshot.val();
+      }
+    });
+
+    const labelRef = ref(db, `catatanLabel/${labelId}`);
+
+    onChildAdded(labelRef, (data) => {
+      const item = document.createElement("li");
+      item.setAttribute("data-id", data.key);
+      item.innerHTML = `
+        <span>${data.val()}</span>
+        <button onclick="hapusCatatanLabel('${labelId}', '${data.key}')">🗑</button>
+      `;
+      daftar.appendChild(item);
+    });
+
+    onChildRemoved(labelRef, (data) => {
+      const item = document.querySelector(`li[data-id="${data.key}"]`);
+      if (item) item.remove();
+    });
+
+    window.hapusCatatanLabel = function (labelId, catatanId) {
+      const itemRef = ref(db, `catatanLabel/${labelId}/${catatanId}`);
+      remove(itemRef);
+    };
+  </script>
+</body>
+</html>
