@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Virgo Admin</title>
   <link rel="icon" href="logo.png" type="image/png">
-<style>
+  <meta name="theme-color" content="#121212" />
+  <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     html, body {
       height: 100%;
       font-family: sans-serif;
@@ -23,15 +23,14 @@
       inset: 0;
       background: rgba(0, 0, 0, 0.4);
       z-index: 900;
-      transition: opacity 0.3s ease;
     }
-
-    .overlay.active { display: block; opacity: 1; }
+    .overlay.active { display: block; }
 
     nav.vertical-nav {
       position: fixed;
       top: 50%;
-      transform: translateY(-50%);
+      right: 0;
+      transform: translateX(100%) translateY(-50%);
       max-height: 90vh;
       display: flex;
       flex-direction: column;
@@ -39,26 +38,16 @@
       padding: 20px 16px;
       overflow-y: auto;
       z-index: 1000;
-      background: none;
-      transition: transform 0.3s ease;
+      background: none; /* background dihilangkan */
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
     }
 
-    #navKanan {
-      right: 0;
-      transform: translateX(100%) translateY(-50%);
-    }
-
-    #navKanan.open {
+    nav.vertical-nav.open {
       transform: translateX(0) translateY(-50%);
-    }
-
-    #navKiri {
-      left: 0;
-      transform: translateX(-100%) translateY(-50%);
-    }
-
-    #navKiri.open {
-      transform: translateX(0) translateY(-50%);
+      opacity: 1;
+      pointer-events: auto;
     }
 
     .nav-button {
@@ -73,11 +62,14 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.3);
     }
 
-.nav-button:focus {
-  outline: 2px solid white;
-  background-color: rgba(255,255,255,0.2);
-}
+    .nav-button:focus {
+      outline: 2px solid white;
+      background-color: rgba(255,255,255,0.2);
+    }
 
+    .nav-button:hover {
+      background-color: rgba(255,255,255,0.1);
+    }
 
     .swipe-area {
       position: fixed;
@@ -87,7 +79,6 @@
       z-index: 950;
     }
 
-    #swipe-left { left: 0; }
     #swipe-right { right: 0; }
 
     .container {
@@ -103,141 +94,50 @@
       padding: 1.2rem;
       margin-bottom: 1.5rem;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-      cursor: pointer;
-      transition: transform 0.2s;
-      position: relative;
+      text-align: center;
     }
-
-    .card:hover { transform: scale(1.01); }
 
     .card h3 {
       margin: 0.2rem 0;
       font-size: 1.2rem;
-      text-align: center;
       font-weight: bold;
-    }
-
-    .card small {
-      color: #555;
-      display: block;
-      margin-bottom: 0.5rem;
-      text-align: center;
     }
 
     #liveCard p {
-      font-size: 1.5rem;
+      font-size: 1rem;
+      line-height: 1.4;
       text-align: center;
     }
 
-    .cekPilih {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      transform: scale(1.4);
-      display: none;
+    @media (max-width: 600px) {
+      .nav-button, .card h3, #liveCard p {
+        font-size: 12px !important;
+      }
+      .card {
+        padding: 0.7rem;
+      }
     }
-
-    .card.pilih-mode .cekPilih {
-      display: inline-block;
-    }
-
-    #floatingBar {
-      display: none;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(20, 20, 20, 0.95);
-      padding: 10px 16px;
-      color: white;
-      z-index: 999;
-      justify-content: space-between;
-      align-items: center;
-      border-top: 1px solid rgba(255,255,255,0.2);
-    }
-
-    #floatingBar button {
-      background: crimson;
-      border: none;
-      padding: 6px 12px;
-      color: white;
-      font-weight: bold;
-      border-radius: 4px;
-    }
-
-    #floatingBar .batal {
-      background: gray;
-      margin-left: 10px;
-    }
-
-    /* === RESPONSIVE: Mobile Text Smaller === */
-@media (max-width: 600px) {
-  body, .nav-button, .card h3, .card small, #liveCard p, #floatingBar, #floatingBar button {
-    font-size: 10px !important;
-  }
-
-  .card {
-    padding: 0.6rem;
-  }
-
-  .nav-button {
-    height: 32px;
-    line-height: 32px;
-  }
-
-  #liveCard p {
-    font-size: 0.85rem !important;
-  }
-
-  .card h3 {
-    font-size: 0.9rem !important;
-  }
-
-  .card small {
-    font-size: 0.65rem !important;
-  }
-
-  #floatingBar button {
-    padding: 3px 6px;
-  }
-}
-
   </style>
 </head>
 <body>
-  <div id="swipe-left" class="swipe-area"></div>
   <div id="swipe-right" class="swipe-area"></div>
   <div class="overlay" id="overlay"></div>
 
   <nav class="vertical-nav" id="navKanan">
-    <button class="nav-button" onclick="aktifkanModePilih()">📝 Pilih</button>
-    <button class="nav-button" onclick="location.href='tambah.html'">➕ Tambah</button>
-    <button class="nav-button" onclick="location.href='kelola-live.html'">📡 Kelola Live</button>
-    <button class="nav-button" onclick="sessionStorage.clear(); location.href='index.html'">🚪 Logout</button>
+    <button class="nav-button" onclick="location.href='kelola-live.html'">📡 Live</button>
+    <button class="nav-button" onclick="location.href='catatan.html'">📝 Catatan</button>
+    <button class="nav-button" onclick="location.href='dokumen.html'">📄 Dokumen</button>
   </nav>
-
-  <nav class="vertical-nav" id="navKiri"></nav>
 
   <div class="container">
     <section id="catatanLive">
       <div class="card" id="liveCard"><h3>Memuat...</h3></div>
     </section>
-    <section id="daftarCatatan" style="display: none;">
-      <div id="listSemuaCatatan"></div>
-    </section>
-  </div>
-
-  <div id="floatingBar">
-    <span id="jumlahDipilih">0 dipilih</span>
-    <div>
-      <button onclick="hapusDipilih()">🗑 Hapus</button>
-      <button class="batal" onclick="batalPilih()">Batal</button>
-    </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const app = initializeApp({
       apiKey: "AIzaSyB59jxyeAOLp4bLJdBF4R0-bw7NnieEzes",
@@ -249,167 +149,53 @@
     });
 
     const db = getFirestore(app);
-
     const liveCard = document.getElementById("liveCard");
     let liveIndex = 0;
     let liveData = [];
 
-   async function loadLiveCards() {
-  const snap = await getDocs(collection(db, "live"));
-  liveData = snap.docs.map(d => d.data().isi || "Tanpa isi");
+    async function loadLiveCards() {
+      const snap = await getDocs(collection(db, "live"));
+      liveData = snap.docs.map(d => d.data().isi || "Tanpa isi");
 
-  if (liveData.length === 0) {
-    liveCard.innerHTML = "<p><em>Belum ada catatan live.</em></p>";
-  } else {
-    shuffleArray(liveData); // <- Acak array
-    showLiveCard();
-    setInterval(() => {
-      liveIndex = (liveIndex + 1) % liveData.length;
-      showLiveCard();
-    }, 50000);
-  }
-}
+      if (liveData.length === 0) {
+        liveCard.innerHTML = "<p><em>Belum ada catatan live.</em></p>";
+      } else {
+        shuffleArray(liveData);
+        showLiveCard();
+        setInterval(() => {
+          liveIndex = (liveIndex + 1) % liveData.length;
+          showLiveCard();
+        }, 50000);
+      }
+    }
 
-// Fungsi untuk mengacak array (Fisher-Yates Shuffle)
-function shuffleArray(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-}
-
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
 
     function showLiveCard() {
       liveCard.innerHTML = `<p>${liveData[liveIndex]}</p>`;
     }
 
-    async function loadKategori() {
-      const snap = await getDocs(collection(db, "catatan"));
-      const raw = snap.docs.map(d => (d.data().kategori || "Umum").trim().toLowerCase());
-      const unik = [...new Set(raw)].sort();
-      const nav = document.getElementById("navKiri");
-      nav.innerHTML = "";
-      unik.forEach(k => {
-        const btn = document.createElement("button");
-        btn.className = "nav-button";
-        btn.textContent = k.charAt(0).toUpperCase() + k.slice(1);
-        btn.onclick = () => tampilkanKategori(k);
-        nav.appendChild(btn);
-      });
-    }
-
-    async function tampilkanKategori(kategori) {
-      const q = query(collection(db, "catatan"), where("kategori", "==", kategori));
-      const snap = await getDocs(q);
-      const list = document.getElementById("listSemuaCatatan");
-      document.getElementById("catatanLive").style.display = "none";
-      document.getElementById("daftarCatatan").style.display = "block";
-      list.innerHTML = "";
-
-      snap.forEach(doc => {
-        const data = doc.data();
-        const div = document.createElement("div");
-        div.className = "card";
-        div.innerHTML = `
-          <input type="checkbox" class="cekPilih" onchange="togglePilih('${doc.id}', this)">
-          <small>${data.kategori || "Umum"}</small>
-          <h3>${data.judul || "(Tanpa Judul)"}</h3>
-        `;
-
-        let timer;
-        div.ontouchstart = () => {
-          timer = setTimeout(() => {
-            aktifkanModePilih();
-            const cb = div.querySelector(".cekPilih");
-            cb.checked = true;
-            togglePilih(doc.id, cb);
-          }, 500);
-        };
-        div.ontouchend = () => clearTimeout(timer);
-        div.ontouchmove = () => clearTimeout(timer);
-
-        div.onclick = () => {
-          if (modePilih) {
-            const cb = div.querySelector(".cekPilih");
-            cb.checked = !cb.checked;
-            togglePilih(doc.id, cb);
-          } else {
-            location.href = `detail.html?id=${doc.id}`;
-          }
-        };
-
-        list.appendChild(div);
-      });
-    }
-
-    let modePilih = false;
-    let dipilih = new Set();
-
-    function aktifkanModePilih() {
-      if (document.getElementById("daftarCatatan").style.display === "none") {
-        alert("Pilih kategori terlebih dahulu.");
-        return;
-      }
-      modePilih = true;
-      document.getElementById("floatingBar").style.display = "flex";
-      document.querySelectorAll("#listSemuaCatatan .card").forEach(c => c.classList.add("pilih-mode"));
-    }
-
-    function batalPilih() {
-      modePilih = false;
-      dipilih.clear();
-      document.getElementById("floatingBar").style.display = "none";
-      document.querySelectorAll("#listSemuaCatatan .card").forEach(c => {
-        c.classList.remove("pilih-mode");
-        const cb = c.querySelector(".cekPilih");
-        if (cb) cb.checked = false;
-      });
-    }
-
-    async function hapusDipilih() {
-      if (!confirm(`Hapus ${dipilih.size} catatan?`)) return;
-      for (const id of dipilih) {
-        await deleteDoc(doc(db, "catatan", id));
-      }
-      location.reload();
-    }
-
-    function togglePilih(id, cb) {
-      if (cb.checked) dipilih.add(id);
-      else dipilih.delete(id);
-      document.getElementById("jumlahDipilih").textContent = `${dipilih.size} dipilih`;
-      if (dipilih.size === 0) batalPilih();
-    }
-
-    window.togglePilih = togglePilih;
-    window.hapusDipilih = hapusDipilih;
-    window.batalPilih = batalPilih;
-    window.aktifkanModePilih = aktifkanModePilih;
-
-    // init
     loadLiveCards();
-    loadKategori();
-
   </script>
 
   <script>
     const overlay = document.getElementById("overlay");
     const navKanan = document.getElementById("navKanan");
-    const navKiri = document.getElementById("navKiri");
 
     function openNavKanan() {
       navKanan.classList.add("open");
       overlay.classList.add("active");
-    }
-
-    function openNavKiri() {
-      navKiri.classList.add("open");
-      overlay.classList.add("active");
+      const firstBtn = navKanan.querySelector(".nav-button");
+      if (firstBtn) firstBtn.focus();
     }
 
     function closeNavs() {
       navKanan.classList.remove("open");
-      navKiri.classList.remove("open");
       overlay.classList.remove("active");
     }
 
@@ -421,103 +207,19 @@ function shuffleArray(arr) {
 
     document.addEventListener("touchend", e => {
       const endX = e.changedTouches[0].clientX;
-      if (window._touchX < 40 && endX > window._touchX + 30) openNavKiri();
-      else if (window._touchX > window.innerWidth - 40 && endX < window._touchX - 30) openNavKanan();
+      if (window._touchX > window.innerWidth - 40 && endX < window._touchX - 30) openNavKanan();
     });
 
     document.addEventListener("keydown", e => {
-      if (e.key === "ArrowLeft") openNavKiri();
-      else if (e.key === "ArrowRight") openNavKanan();
+      if (e.key === "ArrowRight") openNavKanan();
       else if (e.key === "Escape") closeNavs();
     });
   </script>
 
-<script>
-  const overlay = document.getElementById("overlay");
-  const navKanan = document.getElementById("navKanan");
-  const navKiri = document.getElementById("navKiri");
-
-  function openNavKanan() {
-    navKanan.classList.add("open");
-    overlay.classList.add("active");
-    focusNav(navKanan);
-  }
-
-  function openNavKiri() {
-    navKiri.classList.add("open");
-    overlay.classList.add("active");
-    focusNav(navKiri);
-  }
-
-  function closeNavs() {
-    navKanan.classList.remove("open");
-    navKiri.classList.remove("open");
-    overlay.classList.remove("active");
-  }
-
-  function focusNav(navEl) {
-    const buttons = navEl.querySelectorAll(".nav-button");
-    if (buttons.length > 0) buttons[0].focus();
-  }
-
-  overlay.onclick = closeNavs;
-
-  // Swipe gesture untuk buka nav kiri/kanan
-  document.addEventListener("touchstart", e => {
-    window._touchX = e.touches[0].clientX;
-  });
-
-  document.addEventListener("touchend", e => {
-    const endX = e.changedTouches[0].clientX;
-    if (window._touchX < 40 && endX > window._touchX + 30) openNavKiri();
-    else if (window._touchX > window.innerWidth - 40 && endX < window._touchX - 30) openNavKanan();
-  });
-
-  // Navigasi keyboard
-  document.addEventListener("keydown", e => {
-    const kananTerbuka = navKanan.classList.contains("open");
-    const kiriTerbuka = navKiri.classList.contains("open");
-    const aktif = kananTerbuka ? navKanan : kiriTerbuka ? navKiri : null;
-
-    if (e.key === "ArrowLeft") {
-      openNavKiri();
-      return;
+  <script>
+    if (sessionStorage.getItem("aksesAdmin") !== "true") {
+      location.href = "index.html";
     }
-    if (e.key === "ArrowRight") {
-      openNavKanan();
-      return;
-    }
-    if (e.key === "Escape" || e.key === "Backspace") {
-      if (kananTerbuka || kiriTerbuka) {
-        closeNavs();
-        e.preventDefault();
-      }
-      return;
-    }
-
-    if (!aktif) return;
-
-    const buttons = Array.from(aktif.querySelectorAll(".nav-button"));
-    const current = document.activeElement;
-    const idx = buttons.indexOf(current);
-
-    if (e.key === "ArrowDown" && idx !== -1 && idx < buttons.length - 1) {
-      e.preventDefault();
-      buttons[idx + 1].focus();
-    } else if (e.key === "ArrowUp" && idx > 0) {
-      e.preventDefault();
-      buttons[idx - 1].focus();
-    } else if (e.key === "Enter" && idx !== -1) {
-      current.click();
-    }
-  });
-</script>
-
-<script>
-if (sessionStorage.getItem("aksesAdmin") !== "true") {
-  location.href = "index.html";
-}
-</script>
-
+  </script>
 </body>
 </html>
