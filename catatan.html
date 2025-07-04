@@ -329,5 +329,10 @@
       remove(ref(db, `daftarCatatan/${catatanId}`));
     };
   </script>
+  <script>
+  if (sessionStorage.getItem("aksesAdmin") !== "true") {
+    location.href = "index.html";
+  }
+</script>
 </body>
 </html>
