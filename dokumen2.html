@@ -3,252 +3,121 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Catatan</title>
+  <title>Editor Dokumen</title>
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet" />
   <style>
     :root {
       --bg: #121212;
       --text: #f1f1f1;
-      --input-bg: #1f1f1f;
-      --item-bg: #1a1a1a;
-      --button-bg: #3b82f6;
-      --button-hover: #2563eb;
-      --radius: 10px;
-      --shadow: 0 2px 8px rgba(0,0,0,0.3);
+      --header: #1976d2;
+      --card: #ffffff;
+      --border: #ccc;
     }
 
-    * { box-sizing: border-box; }
     body {
       margin: 0;
       background: var(--bg);
       color: var(--text);
-      font-family: 'Segoe UI', sans-serif;
+      font-family: sans-serif;
     }
 
     header {
-      background: var(--button-bg);
-      padding: 8px 14px;
-      height: 44px;
+      background: var(--header);
+      color: white;
+      padding: 10px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      color: white;
-      font-size: 15px;
-      font-weight: 600;
-      box-shadow: var(--shadow);
-      position: relative;
-    }
-
-    .menu-btn {
-      font-size: 20px;
-      cursor: pointer;
-      background: none;
-      border: none;
-      color: white;
-      padding: 0;
-      line-height: 1;
-    }
-
-    .menu-popup {
-      position: absolute;
-      top: 44px;
-      right: 14px;
-      background: #1a1a1a;
-      border-radius: var(--radius);
+      position: sticky;
+      top: 0;
       z-index: 10;
-      min-width: 120px;
-      opacity: 0;
-      transform: translateY(-5px);
-      transition: opacity 0.2s ease, transform 0.2s ease;
+      flex-wrap: wrap;
     }
-
-    .menu-popup.show {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
-    }
-
-    .menu-popup:not(.show) {
-      pointer-events: none;
-    }
-
-    .menu-popup a {
-      display: block;
-      padding: 10px 12px;
-      color: var(--text);
-      text-decoration: none;
-      font-size: 13px;
-      text-align: right;
-    }
-
-    .menu-popup a:hover { background: #2a2a2a; }
-
-    #labelPopup {
-      top: 52px;
-      right: 14px;
-      min-width: 160px;
-      max-width: 90vw;
-      box-shadow: var(--shadow);
-      z-index: 15;
-    }
-
-    @media (max-width: 480px) {
-      #labelPopup {
-        right: 10px;
-        left: 10px;
-        width: auto;
-        max-width: none;
-      }
-    }
-
-    .container {
-      padding: 20px 16px;
-      max-width: 600px;
-      margin: auto;
-    }
-
-    textarea {
-      width: 100%;
-      padding: 6px 10px;
-      font-size: 14px;
-      border: none;
-      border-radius: var(--radius);
-      background: var(--input-bg);
-      color: var(--text);
-      resize: none;
-      overflow: hidden;
-      line-height: 1.4;
-      min-height: 32px;
-      box-shadow: var(--shadow);
-      transition: background 0.3s;
-    }
-
-    textarea:focus { outline: none; background: #262626; }
-    .aksi { display: flex; justify-content: flex-end; margin-top: 10px; }
 
     button {
-      padding: 8px 14px;
+      background: #ffffff;
+      color: #1976d2;
+      border: none;
+      padding: 8px 16px;
       font-size: 14px;
-      border: none;
-      border-radius: var(--radius);
-      background: var(--button-bg);
-      color: white;
-      box-shadow: var(--shadow);
-      transition: background 0.2s;
       cursor: pointer;
+      border-radius: 4px;
+      font-weight: bold;
     }
 
-    button:active { background: var(--button-hover); }
+    button:hover {
+      background: #e0e0e0;
+    }
 
-    ul { list-style: none; padding: 0; margin-top: 24px; }
-
-    li {
-      position: relative;
+    #toolbar {
       display: flex;
-      flex-direction: column;
-      background: var(--item-bg);
-      padding: 12px;
-      border-radius: var(--radius);
-      margin-bottom: 8px;
-      word-wrap: break-word;
-      box-shadow: var(--shadow);
-      gap: 8px;
-    }
-
-    li span { white-space: pre-wrap; word-break: break-word; }
-
-    .catatan-aksi {
-      display: flex;
-      justify-content: flex-end;
-      gap: 4px;
-    }
-
-    .catatan-aksi button,
-    .catatan-aksi select {
-      font-size: 12px;
-      padding: 2px 6px;
-      background: #2a2a2a;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    .catatan-aksi button:hover {
-      color: #f87171;
-    }
-
-    #daftarLabel li {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
       align-items: center;
-      padding: 4px 0;
-      font-size: 13px;
+      gap: 8px;
+      background: transparent;
     }
 
-    #daftarLabel li a {
-      color: white;
-      text-decoration: none;
-      flex: 1;
-      margin-right: 10px;
+    #editor {
+      background: var(--card);
+      color: #000;
+      min-height: 800px;
+      max-width: 794px;
+      margin: 20px auto 40px;
+      padding: 40px;
+      border: 1px solid var(--border);
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
     }
 
-    #daftarLabel li button {
-      color: #888;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 4px;
-    }
+    @media (max-width: 600px) {
+      header {
+        flex-direction: column-reverse;
+        align-items: flex-start;
+        gap: 8px;
+      }
 
-    #daftarLabel li button:hover {
-      color: #f87171;
+      #toolbar {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      button {
+        font-size: 13px;
+        padding: 6px 12px;
+      }
+
+      #editor {
+        padding: 20px;
+        font-size: 14px;
+      }
     }
   </style>
 </head>
 <body>
   <header>
-    <div>Catatan</div>
-    <button class="menu-btn" onclick="toggleMenu()">☰</button>
-    <div class="menu-popup" id="menuPopup">
-      <a href="utama.html">Beranda</a>
-      <a href="catatan.html">Catatan</a>
-      <a href="dokumen.html">Dokumen</a>
-      <a href="checklist.html">Checklist</a>
-      <a href="#" onclick="toggleLabelPopup(event)">Label</a>
+    <button onclick="handleBeranda()">Simpan & Kembali</button>
+    <div id="toolbar">
+      <select class="ql-header">
+        <option value="1">Judul</option>
+        <option value="2">Subjudul</option>
+        <option selected>Paragraf</option>
+      </select>
+      <button class="ql-align" value=""></button>
+      <button class="ql-align" value="center"></button>
+      <button class="ql-align" value="right"></button>
+      <button class="ql-align" value="justify"></button>
     </div>
   </header>
 
-  <!-- Popup Label -->
-  <div class="menu-popup" id="labelPopup">
-    <div style="padding: 10px; background: #1a1a1a; border-radius: var(--radius);">
-      <div style="margin-bottom: 8px; font-weight: bold;">Kelola Label</div>
-      <div style="display: flex; gap: 4px;">
-        <input type="text" id="inputLabel" placeholder="Label baru..." style="flex:1; font-size:13px; padding:4px; background:#2a2a2a; border:none; color:white; border-radius:var(--radius);">
-        <button onclick="tambahLabel()" style="font-size:13px; padding:4px 8px;">Tambah</button>
-      </div>
-      <ul id="daftarLabel" style="margin-top: 10px; max-height: 150px; overflow-y: auto;"></ul>
-    </div>
-  </div>
+  <div id="editor"></div>
 
-  <div class="container">
-    <textarea id="inputCatatan" placeholder="Tulis catatan..."></textarea>
-    <div class="aksi">
-      <button onclick="tambahCatatan()">Tambah</button>
-    </div>
-    <ul id="daftarCatatan"></ul>
-  </div>
+  <!-- Quill -->
+  <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
+  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
-      getDatabase,
-      ref,
-      push,
-      onChildAdded,
-      onChildRemoved,
-      remove
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+      getFirestore, doc, getDoc, setDoc, addDoc, collection, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAXsUMm-JQfvoGNaXemrj1Z6ZEyvtSn-pw",
@@ -261,138 +130,61 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const catatanRef = ref(db, 'daftarCatatan');
-    const labelRef = ref(db, 'daftarLabel');
+    const db = getFirestore(app);
 
-    const input = document.getElementById("inputCatatan");
-    const daftar = document.getElementById("daftarCatatan");
-    const inputLabel = document.getElementById("inputLabel");
-    const daftarLabel = document.getElementById("daftarLabel");
-
-    window.addEventListener("load", () => input.focus());
-
-    input.addEventListener('input', function () {
-      this.style.height = 'auto';
-      this.style.height = (this.scrollHeight) + 'px';
+    const quill = new Quill('#editor', {
+      theme: 'snow',
+      modules: { toolbar: '#toolbar' }
     });
 
-    window.tambahCatatan = function () {
-      const teks = input.value.trim();
-      if (teks !== "") {
-        push(catatanRef, teks);
-        input.value = "";
-        input.style.height = "32px";
-        input.focus();
-      }
-    };
+    const urlParams = new URLSearchParams(window.location.search);
+    const docId = urlParams.get("id");
 
-    onChildAdded(catatanRef, (data) => {
-      const item = document.createElement("li");
-      item.setAttribute("data-id", data.key);
-      item.innerHTML = `
-        <span>${data.val()}</span>
-        <div class="catatan-aksi">
-          <button onclick="hapusCatatan('${data.key}')">🗑</button>
-          <select onchange="pindahKeLabel('${data.key}', this.value)">
-            <option value="">Label</option>
-          </select>
-        </div>
-      `;
-      daftar.appendChild(item);
-
-      const select = item.querySelector("select");
-      onChildAdded(labelRef, (label) => {
-        const opt = document.createElement("option");
-        opt.value = label.key;
-        opt.textContent = label.val();
-        select.appendChild(opt);
+    if (docId) {
+      const ref = doc(db, "dokumen", docId);
+      getDoc(ref).then(snap => {
+        if (snap.exists()) {
+          const data = snap.data();
+          quill.root.innerHTML = data.isi || "";
+        }
+      }).catch(err => {
+        alert("Gagal memuat dokumen.");
+        console.error(err);
       });
-    });
+    }
 
-    window.hapusCatatan = function (id) {
-      const itemRef = ref(db, `daftarCatatan/${id}`);
-      remove(itemRef);
-    };
+    window.handleBeranda = async function () {
+      const isiHTML = quill.root.innerHTML;
+      const plain = quill.getText().trim();
 
-    onChildRemoved(catatanRef, (data) => {
-      const item = document.querySelector(`li[data-id="${data.key}"]`);
-      if (item) item.remove();
-    });
-
-    window.toggleMenu = function () {
-      document.getElementById("menuPopup").classList.toggle("show");
-    };
-
-    window.toggleLabelPopup = function (event) {
-      event.preventDefault();
-      const menu = document.getElementById("menuPopup");
-      const label = document.getElementById("labelPopup");
-      menu.classList.remove("show");
-      label.classList.toggle("show");
-    };
-
-    document.addEventListener("click", function (e) {
-      const menu = document.getElementById("menuPopup");
-      const button = document.querySelector(".menu-btn");
-      const labelPopup = document.getElementById("labelPopup");
-      const labelTrigger = document.querySelector('a[onclick^="toggleLabelPopup"]');
-
-      if (!menu.contains(e.target) && !button.contains(e.target)) {
-        menu.classList.remove("show");
+      if (plain.length > 0) {
+        try {
+          if (docId) {
+            await setDoc(doc(db, "dokumen", docId), {
+              isi: isiHTML,
+              waktu: serverTimestamp()
+            });
+          } else {
+            await addDoc(collection(db, "dokumen"), {
+              isi: isiHTML,
+              waktu: serverTimestamp()
+            });
+          }
+        } catch (e) {
+          alert("Gagal menyimpan.");
+          console.error(e);
+        }
       }
-      if (!labelPopup.contains(e.target) && !labelTrigger.contains(e.target)) {
-        labelPopup.classList.remove("show");
-      }
-    });
 
-    window.tambahLabel = function () {
-      const teks = inputLabel.value.trim();
-      if (teks !== "") {
-        push(labelRef, teks);
-        inputLabel.value = "";
-      }
-    };
-
-    onChildAdded(labelRef, (data) => {
-      const item = document.createElement("li");
-      item.setAttribute("data-id", data.key);
-      item.style.display = "flex";
-      item.style.justifyContent = "space-between";
-      item.style.alignItems = "center";
-      item.style.padding = "4px 0";
-      item.style.fontSize = "13px";
-      item.innerHTML = `
-        <a href="label.html?id=${data.key}" style="color: white; text-decoration: none;">${data.val()}</a>
-        <button onclick="hapusLabel('${data.key}')" style="color:#888;">🗑</button>
-      `;
-      daftarLabel.appendChild(item);
-    });
-
-    window.hapusLabel = function (id) {
-      const itemRef = ref(db, `daftarLabel/${id}`);
-      remove(itemRef);
-    };
-
-    onChildRemoved(labelRef, (data) => {
-      const item = document.querySelector(`#daftarLabel li[data-id="${data.key}"]`);
-      if (item) item.remove();
-    });
-
-    window.pindahKeLabel = function (catatanId, labelId) {
-      if (!labelId) return;
-      const item = document.querySelector(`li[data-id="${catatanId}"]`);
-      const teks = item.querySelector("span").textContent;
-      const labelCatatanRef = ref(db, `catatanLabel/${labelId}`);
-      push(labelCatatanRef, teks);
-      remove(ref(db, `daftarCatatan/${catatanId}`));
+      window.location.href = "dokumen.html";
     };
   </script>
-<script>
-  if (sessionStorage.getItem("aksesAdmin") !== "true") {
-    location.href = "index.html";
-  }
-</script>
- 
+
+  <!-- Cek Akses Admin -->
+  <script>
+    if (sessionStorage.getItem("aksesAdmin") !== "true") {
+      location.href = "index.html";
+    }
+  </script>
 </body>
 </html>
