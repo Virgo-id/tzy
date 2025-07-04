@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dokumen Baru</title>
+  <style>
+    :root {
+      --bg: #121212;
+      --text: #f1f1f1;
+      --card: #ffffff;
+      --header: #1976d2;
+      --border: #ccc;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: sans-serif;
+    }
+
+    header {
+      background: var(--header);
+      color: white;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .judul {
+      font-size: 18px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    button {
+      background: #ffffff;
+      color: #1976d2;
+      border: none;
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #e0e0e0;
+    }
+
+    .editor-container {
+      width: 794px;
+      max-width: 100%;
+      min-height: 1123px;
+      margin: 20px auto;
+      padding: 60px 40px;
+      background: var(--card);
+      color: #000;
+      border: 1px solid var(--border);
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 0;
+    }
+
+    p {
+      line-height: 1.6;
+    }
+
+    @media (max-width: 600px) {
+      .judul {
+        font-size: 16px;
+      }
+
+      button {
+        font-size: 13px;
+        padding: 6px 12px;
+      }
+
+      .editor-container {
+        padding: 40px 20px;
+        font-size: 14px;
+        min-height: auto;
+      }
+
+      h1 {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="judul">Dokumen</div>
+    <button onclick="handleBeranda()">Beranda</button>
+  </header>
+
+  <div id="editor" class="editor-container" contenteditable="true">
+    <h1><br></h1>
+    <p><br></p>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // Konfigurasi Firebase Anda
+    const firebaseConfig = {
+      apiKey: "AIzaSyAXsUMm-JQfvoGNaXemrj1Z6ZEyvtSn-pw",
+      authDomain: "virgo-c8272.firebaseapp.com",
+      databaseURL: "https://virgo-c8272-default-rtdb.firebaseio.com",
+      projectId: "virgo-c8272",
+      storageBucket: "virgo-c8272.firebasestorage.app",
+      messagingSenderId: "387259252172",
+      appId: "1:387259252172:web:25fbec736d94086c6af169"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Fungsi global agar bisa dipanggil dari HTML
+    window.handleBeranda = async function () {
+      const editor = document.getElementById('editor');
+      const isi = editor.innerText.trim();
+      const html = editor.innerHTML;
+
+      if (isi.length > 0) {
+        try {
+          await addDoc(collection(db, "dokumen"), {
+            isi: html,
+            waktu: serverTimestamp()
+          });
+          console.log("✅ Dokumen berhasil disimpan.");
+        } catch (err) {
+          console.error("❌ Gagal menyimpan dokumen:", err);
+          alert("Gagal menyimpan dokumen.");
+        }
+      }
+
+      // Navigasi ke beranda
+      window.location.href = "dokumen.html";
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dokumen</title>
+  <style>
+    :root {
+      --bg: #121212;
+      --text: #f1f1f1;
+      --card: #1e1e1e;
+      --header: #1976d2;
+      --accent: #2196f3;
+      --danger: #e53935;
+      --shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    header {
+      background: var(--header);
+      padding: 6px 12px;
+      height: 42px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .menu-btn {
+      font-size: 20px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: white;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .menu-popup {
+      position: absolute;
+      top: 42px;
+      right: 12px;
+      background: transparent;
+      border-radius: 10px;
+      z-index: 10;
+      min-width: 120px;
+      opacity: 0;
+      transform: translateY(-5px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      pointer-events: none;
+      text-align: right;
+    }
+
+    .menu-popup.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .menu-popup a {
+      display: block;
+      padding: 10px 12px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .menu-popup a:hover {
+      background: #2a2a2a;
+    }
+
+    main {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 0 16px;
+    }
+
+    .btn-tambah {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      margin-bottom: 20px;
+    }
+
+    .btn-tambah:hover {
+      background: #0d8ae0;
+    }
+
+    .search-input {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      font-size: 14px;
+      margin-bottom: 16px;
+      border-radius: 6px;
+      border: none;
+      outline: none;
+      background: #2a2a2a;
+      color: var(--text);
+    }
+
+    .doc {
+      background: var(--card);
+      padding: 12px 16px;
+      border: 1px solid #333;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .doc-info {
+      flex: 1;
+      cursor: pointer;
+      min-width: 0;
+    }
+
+    .doc-title {
+      font-weight: bold;
+      font-size: 16px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .doc-date {
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    .btn-hapus {
+      background: var(--danger);
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-left: 12px;
+      flex-shrink: 0;
+    }
+
+    .btn-hapus:hover {
+      background: #c62828;
+    }
+
+    .notifikasi {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #323232;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 1000;
+    }
+
+    .notifikasi.show {
+      opacity: 1;
+    }
+
+    @media (max-width: 500px) {
+      .doc {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .btn-hapus {
+        margin: 10px 0 0;
+      }
+
+      .doc-title {
+        font-size: 14px;
+      }
+
+      .search-input,
+      .btn-tambah {
+        font-size: 13px;
+        padding: 8px 12px;
+      }
+
+      header {
+        font-size: 14px;
+        height: 42px;
+        padding: 6px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>Dokumen</div>
+    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    <div class="menu-popup" id="menuPopup">
+      <a href="index.html">Beranda</a>
+      <a href="tentang.html">Tentang</a>
+      <a href="pengaturan.html">Pengaturan</a>
+    </div>
+  </header>
+
+  <main>
+    <a class="btn-tambah" href="dokumen2.html">+ Tambah Dokumen</a>
+    <input type="text" class="search-input" id="search" placeholder="Cari judul dokumen...">
+    <div id="daftar-dokumen">Memuat dokumen...</div>
+  </main>
+
+  <div id="notifikasi" class="notifikasi"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getFirestore, collection, getDocs, query, orderBy, doc, deleteDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAXsUMm-JQfvoGNaXemrj1Z6ZEyvtSn-pw",
+      authDomain: "virgo-c8272.firebaseapp.com",
+      databaseURL: "https://virgo-c8272-default-rtdb.firebaseio.com",
+      projectId: "virgo-c8272",
+      storageBucket: "virgo-c8272.appspot.com",
+      messagingSenderId: "387259252172",
+      appId: "1:387259252172:web:25fbec736d94086c6af169"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const daftar = document.getElementById('daftar-dokumen');
+    const searchInput = document.getElementById('search');
+    const notifBox = document.getElementById('notifikasi');
+    let semuaDokumen = [];
+
+    function showNotif(pesan, lama = 2000) {
+      notifBox.innerText = pesan;
+      notifBox.classList.add("show");
+      setTimeout(() => {
+        notifBox.classList.remove("show");
+      }, lama);
+    }
+
+    async function loadDokumen() {
+      const q = query(collection(db, "dokumen"), orderBy("waktu", "desc"));
+      const snapshot = await getDocs(q);
+
+      if (snapshot.empty) {
+        daftar.innerHTML = "<p>Belum ada dokumen tersimpan.</p>";
+        return;
+      }
+
+      semuaDokumen = [];
+
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const id = docSnap.id;
+        const isiHTML = data.isi || "";
+        const waktu = data.waktu?.toDate()?.toLocaleString("id-ID") || "Tidak diketahui";
+
+        const match = isiHTML.match(/<h1[^>]*>(.*?)<\/h1>/i);
+        const judul = match ? match[1].trim() : "(Tanpa Judul)";
+        semuaDokumen.push({ id, judul, waktu });
+      });
+
+      tampilkanDokumen();
+    }
+
+    function tampilkanDokumen() {
+      const keyword = searchInput.value.trim().toLowerCase();
+      const hasil = semuaDokumen.filter(d =>
+        d.judul.toLowerCase().includes(keyword)
+      );
+
+      daftar.innerHTML = "";
+
+      if (hasil.length === 0) {
+        daftar.innerHTML = "<p>Tidak ada dokumen yang cocok.</p>";
+        return;
+      }
+
+      hasil.forEach(dok => {
+        const item = document.createElement("div");
+        item.className = "doc";
+
+        const info = document.createElement("div");
+        info.className = "doc-info";
+        info.innerHTML = `
+          <div class="doc-title">${dok.judul}</div>
+          <div class="doc-date">${dok.waktu}</div>
+        `;
+        info.onclick = () => {
+          window.location.href = `dokumen2.html?id=${dok.id}`;
+        };
+
+        const hapusBtn = document.createElement("button");
+        hapusBtn.className = "btn-hapus";
+        hapusBtn.innerText = "Hapus";
+        hapusBtn.onclick = async (e) => {
+          e.stopPropagation();
+          showNotif("Menghapus...");
+          await deleteDoc(doc(db, "dokumen", dok.id));
+          semuaDokumen = semuaDokumen.filter(x => x.id !== dok.id);
+          tampilkanDokumen();
+          showNotif("Dokumen dihapus");
+        };
+
+        item.appendChild(info);
+        item.appendChild(hapusBtn);
+        daftar.appendChild(item);
+      });
+    }
+
+    searchInput.addEventListener("input", tampilkanDokumen);
+    loadDokumen();
+  </script>
+
+  <script>
+    function toggleMenu() {
+      const menu = document.getElementById("menuPopup");
+      menu.classList.toggle("show");
+    }
+
+    document.addEventListener("click", function (e) {
+      const menu = document.getElementById("menuPopup");
+      const button = document.querySelector(".menu-btn");
+      if (!menu.contains(e.target) && !button.contains(e.target)) {
+        menu.classList.remove("show");
+      }
+    });
+  </script>
+<script>
+  if (sessionStorage.getItem("aksesAdmin") !== "true") {
+    location.href = "index.html";
+  }
+</script>
+</body>
+</html>
