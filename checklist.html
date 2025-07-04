@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checklist</title>
+  <style>
+    :root {
+      --bg: #121212;
+      --text: #f1f1f1;
+      --item-bg: #1a1a1a;
+      --input-bg: #1f1f1f;
+      --accent: #3b82f6;
+      --shadow: 0 2px 8px rgba(0,0,0,0.2);
+      --radius: 8px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: sans-serif;
+    }
+    header {
+      background: var(--accent);
+      color: white;
+      padding: 1px 12px;
+      font-size: 18px;
+      font-weight: bold;
+      position: relative;
+      box-shadow: var(--shadow);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .menu-btn {
+      font-size: 20px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: white;
+    }
+    .menu-popup {
+      position: absolute;
+      top: 70px;
+      right: 14px;
+      background: transparent;
+      border-radius: var(--radius);
+      z-index: 10;
+      min-width: 120px;
+      opacity: 0;
+      transform: translateY(-5px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    .menu-popup.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .menu-popup:not(.show) {
+      pointer-events: none;
+    }
+    .menu-popup a {
+      display: block;
+      padding: 10px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 13px;
+      text-align: right;
+    }
+    .menu-popup a:hover { background: #2a2a2a; }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 16px;
+    }
+    textarea {
+      width: 100%;
+      padding: 10px;
+      background: var(--input-bg);
+      color: var(--text);
+      border: none;
+      border-radius: var(--radius);
+      font-size: 14px;
+      line-height: 1.5;
+      resize: none;
+    }
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+    .card {
+      background: var(--item-bg);
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-top: 14px;
+      box-shadow: var(--shadow);
+    }
+    .card h4 {
+      margin: 0 0 8px 0;
+      font-size: 15px;
+      font-weight: bold;
+    }
+    .sub-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+    .sub-item.done {
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+    .hapus-btn {
+      background: none;
+      color: #f87171;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      float: right;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>Checklist</div>
+    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    <div class="menu-popup" id="menuPopup">
+      <a href="utama.html">Beranda</a>
+      <a href="catatan.html">Catatan</a>
+      <a href="dokumen.html">Dokumen</a>
+      <a href="checklist.html">Checklist</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <textarea id="inputItem" placeholder="Baris pertama: judul\nBaris berikutnya: isi checklist..."></textarea>
+    <button onclick="tambahItem()">Tambah</button>
+    <div id="daftarItem"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getDatabase,
+      ref,
+      push,
+      onChildAdded,
+      onChildChanged,
+      onChildRemoved,
+      update,
+      remove
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAXsUMm-JQfvoGNaXemrj1Z6ZEyvtSn-pw",
+      authDomain: "virgo-c8272.firebaseapp.com",
+      databaseURL: "https://virgo-c8272-default-rtdb.firebaseio.com",
+      projectId: "virgo-c8272",
+      storageBucket: "virgo-c8272.appspot.com",
+      messagingSenderId: "387259252172",
+      appId: "1:387259252172:web:25fbec736d94086c6af169"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const checklistRef = ref(db, 'subChecklist');
+
+    const input = document.getElementById("inputItem");
+    const daftar = document.getElementById("daftarItem");
+
+    window.tambahItem = function () {
+      const baris = input.value.trim().split("\n").map(b => b.trim()).filter(Boolean);
+      if (baris.length > 1) {
+        const judul = baris[0];
+        const items = baris.slice(1).map(t => ({ teks: t, selesai: false }));
+        push(checklistRef, { judul, items });
+        input.value = "";
+        input.focus();
+      }
+    };
+
+    onChildAdded(checklistRef, (data) => {
+      renderKartu(data.key, data.val());
+    });
+
+    function renderKartu(id, data) {
+      const div = document.createElement("div");
+      div.className = "card";
+      div.setAttribute("data-id", id);
+
+      const h4 = document.createElement("h4");
+      h4.textContent = data.judul;
+
+      const hapus = document.createElement("button");
+      hapus.className = "hapus-btn";
+      hapus.textContent = "🗑";
+      hapus.onclick = () => remove(ref(db, `subChecklist/${id}`));
+
+      h4.appendChild(hapus);
+      div.appendChild(h4);
+
+      data.items.forEach((item, index) => {
+        const baris = document.createElement("div");
+        baris.className = "sub-item";
+        if (item.selesai) baris.classList.add("done");
+
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = item.selesai;
+        cb.onchange = () => toggleSelesai(id, index, cb.checked);
+
+        const span = document.createElement("span");
+        span.textContent = item.teks;
+
+        baris.appendChild(cb);
+        baris.appendChild(span);
+        div.appendChild(baris);
+      });
+
+      daftar.appendChild(div);
+    }
+
+    function toggleSelesai(id, index, selesai) {
+      const itemRef = ref(db, `subChecklist/${id}/items/${index}`);
+      update(itemRef, { selesai });
+    }
+
+    onChildRemoved(checklistRef, (data) => {
+      const card = document.querySelector(`.card[data-id="${data.key}"]`);
+      if (card) card.remove();
+    });
+
+    window.toggleMenu = function () {
+      document.getElementById("menuPopup").classList.toggle("show");
+    };
+    document.addEventListener("click", function (e) {
+      const menu = document.getElementById("menuPopup");
+      const button = document.querySelector(".menu-btn");
+      if (!menu.contains(e.target) && !button.contains(e.target)) {
+        menu.classList.remove("show");
+      }
+    });
+  </script>
+</body>
+</html>
