@@ -16,71 +16,73 @@
       --shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
 
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: sans-serif;
       background: var(--bg);
       color: var(--text);
-      font-family: 'Segoe UI', sans-serif;
+      overflow-x: hidden;
     }
 
-    header {
-      background: var(--button-bg);
-      padding: 8px 14px;
-      height: 44px;
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 900;
+    }
+    .overlay.active { display: block; }
+
+    nav.vertical-nav {
+      position: fixed;
+      top: 50%;
+      right: 0;
+      transform: translateX(100%) translateY(-50%);
+      max-height: 90vh;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: white;
-      font-size: 15px;
-      font-weight: 600;
-      box-shadow: var(--shadow);
-      position: relative;
-    }
-
-    .menu-btn {
-      font-size: 20px;
-      cursor: pointer;
+      flex-direction: column;
+      gap: 12px;
+      padding: 20px 16px;
+      overflow-y: auto;
+      z-index: 1000;
       background: none;
-      border: none;
-      color: white;
-      padding: 0;
-      line-height: 1;
-    }
-
-    .menu-popup {
-      position: absolute;
-      top: 44px;
-      right: 14px;
-      background: #1a1a1a;
-      border-radius: var(--radius);
-      z-index: 10;
-      min-width: 120px;
+      transition: transform 0.3s ease, opacity 0.3s ease;
       opacity: 0;
-      transform: translateY(-5px);
-      transition: opacity 0.2s ease, transform 0.2s ease;
-    }
-
-    .menu-popup.show {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
-    }
-
-    .menu-popup:not(.show) {
       pointer-events: none;
     }
 
-    .menu-popup a {
-      display: block;
-      padding: 10px 12px;
-      color: var(--text);
-      text-decoration: none;
-      font-size: 13px;
-      text-align: right;
+    nav.vertical-nav.open {
+      transform: translateX(0) translateY(-50%);
+      opacity: 1;
+      pointer-events: auto;
     }
 
-    .menu-popup a:hover { background: #2a2a2a; }
+    .nav-button {
+      background: none;
+      border: none;
+      font-size: 16px;
+      color: white;
+      cursor: pointer;
+      padding: 6px 0;
+      height: 48px;
+      line-height: 48px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .nav-button:hover {
+      background-color: rgba(255,255,255,0.1);
+    }
+
+    .swipe-area {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 40px;
+      height: 100vh;
+      z-index: 950;
+    }
 
     .container {
       padding: 20px 16px;
@@ -97,15 +99,16 @@
       background: var(--input-bg);
       color: var(--text);
       resize: none;
-      overflow: hidden;
-      line-height: 1.4;
       min-height: 32px;
+      line-height: 1.4;
       box-shadow: var(--shadow);
-      transition: background 0.3s;
     }
 
-    textarea:focus { outline: none; background: #262626; }
-    .aksi { display: flex; justify-content: flex-end; margin-top: 10px; }
+    .aksi {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
 
     button {
       padding: 8px 14px;
@@ -115,67 +118,82 @@
       background: var(--button-bg);
       color: white;
       box-shadow: var(--shadow);
-      transition: background 0.2s;
       cursor: pointer;
     }
 
-    button:active { background: var(--button-hover); }
+    button:active {
+      background: var(--button-hover);
+    }
 
-    ul { list-style: none; padding: 0; margin-top: 24px; }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 24px;
+    }
 
     li {
-      position: relative;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
       background: var(--item-bg);
       padding: 12px;
       border-radius: var(--radius);
       margin-bottom: 8px;
-      word-wrap: break-word;
+      display: flex;
+      flex-direction: column;
       box-shadow: var(--shadow);
-      gap: 8px;
     }
 
-    li span { white-space: pre-wrap; word-break: break-word; flex-grow: 1; }
+    li span {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
 
-    li button {
+    .hapus-btn {
+      align-self: flex-end;
+      color: #888;
       background: none;
       border: none;
-      color: #888;
+      margin-top: 8px;
       font-size: 16px;
-      cursor: pointer;
-      padding: 4px;
     }
 
-    li button:hover { color: #f87171; }
+    .hapus-btn:hover {
+      color: #f87171;
+    }
+
+    .popup-konfirmasi {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a1a1a;
+      padding: 16px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      z-index: 9999;
+      display: none;
+    }
+
+    .popup-konfirmasi.active {
+      display: block;
+    }
+
+    .popup-konfirmasi button {
+      margin: 0 4px;
+    }
   </style>
 </head>
 <body>
-  <header>
-    <div>Catatan</div>
-    <button class="menu-btn" onclick="toggleMenu()">☰</button>
-    <div class="menu-popup" id="menuPopup">
-      <a href="utama.html">Beranda</a>
-      <a href="catatan.html">Catatan</a>
-      <a href="dokumen.html">Dokumen</a>
-      <a href="checklist.html">Checklist</a>
-      <a href="#" onclick="toggleLabelPopup(event)">Label</a>
-    </div>
-  </header>
+  <!-- Swipe Menu & Overlay -->
+  <div class="swipe-area" id="swipe-right"></div>
+  <div class="overlay" id="overlay"></div>
+  <nav class="vertical-nav" id="navKanan">
+    <button class="nav-button" onclick="location.href='utama.html'">Beranda</button>
+    <button class="nav-button" onclick="location.href='catatan.html'">Catatan</button>
+    <button class="nav-button" onclick="location.href='dokumen.html'">Dokumen</button>
+    <button class="nav-button" onclick="location.href='checklist.html'">Checklist</button>
+    <button class="nav-button" onclick="location.href='kategori.html'">Kategori</button>
+  </nav>
 
-  <!-- Popup Label -->
-  <div class="menu-popup" id="labelPopup" style="right: 140px; min-width: 160px;">
-    <div style="padding: 10px; background: #1a1a1a; border-radius: var(--radius);">
-      <div style="margin-bottom: 8px; font-weight: bold;">Kelola Label</div>
-      <div style="display: flex; gap: 4px;">
-        <input type="text" id="inputLabel" placeholder="Label baru..." style="flex:1; font-size:13px; padding:4px; background:#2a2a2a; border:none; color:white; border-radius:var(--radius);">
-        <button onclick="tambahLabel()" style="font-size:13px; padding:4px 8px;">Tambah</button>
-      </div>
-      <ul id="daftarLabel" style="margin-top: 10px; max-height: 150px; overflow-y: auto;"></ul>
-    </div>
-  </div>
-
+  <!-- Konten -->
   <div class="container">
     <textarea id="inputCatatan" placeholder="Tulis catatan..."></textarea>
     <div class="aksi">
@@ -184,6 +202,16 @@
     <ul id="daftarCatatan"></ul>
   </div>
 
+  <!-- Popup Konfirmasi -->
+  <div class="popup-konfirmasi" id="popupKonfirmasi">
+    <div style="margin-bottom: 8px;">Yakin ingin menghapus?</div>
+    <div style="text-align: right;">
+      <button onclick="konfirmasiHapus()">Ya</button>
+      <button onclick="batalHapus()">Batal</button>
+    </div>
+  </div>
+
+  <!-- Firebase Script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
@@ -195,7 +223,7 @@
       remove
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-    const firebaseConfig = {
+    const app = initializeApp({
       apiKey: "AIzaSyAXsUMm-JQfvoGNaXemrj1Z6ZEyvtSn-pw",
       authDomain: "virgo-c8272.firebaseapp.com",
       databaseURL: "https://virgo-c8272-default-rtdb.firebaseio.com",
@@ -203,32 +231,22 @@
       storageBucket: "virgo-c8272.appspot.com",
       messagingSenderId: "387259252172",
       appId: "1:387259252172:web:25fbec736d94086c6af169"
-    };
+    });
 
-    const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const catatanRef = ref(db, 'daftarCatatan');
-    const labelRef = ref(db, 'daftarLabel');
 
     const input = document.getElementById("inputCatatan");
     const daftar = document.getElementById("daftarCatatan");
-    const inputLabel = document.getElementById("inputLabel");
-    const daftarLabel = document.getElementById("daftarLabel");
+    const popup = document.getElementById("popupKonfirmasi");
 
-    window.addEventListener("load", () => input.focus());
-
-    input.addEventListener('input', function () {
-      this.style.height = 'auto';
-      this.style.height = (this.scrollHeight) + 'px';
-    });
+    let hapusId = "";
 
     window.tambahCatatan = function () {
       const teks = input.value.trim();
       if (teks !== "") {
         push(catatanRef, teks);
         input.value = "";
-        input.style.height = "32px";
-        input.focus();
       }
     };
 
@@ -237,103 +255,74 @@
       item.setAttribute("data-id", data.key);
       item.innerHTML = `
         <span>${data.val()}</span>
-        <div style="display:flex; flex-direction:column; align-items:flex-end; margin-left:auto; gap:4px;">
-          <button onclick="hapusCatatan('${data.key}')">🗑</button>
-          <select onchange="pindahKeLabel('${data.key}', this.value)" style="font-size:12px; padding:2px 4px; background:#2a2a2a; color:white; border:none; border-radius:6px;">
-            <option value="">Label</option>
-          </select>
-        </div>
+        <button class="hapus-btn" onclick="tampilPopupKonfirmasi('${data.key}')">🗑 Hapus</button>
       `;
       daftar.appendChild(item);
-
-      const select = item.querySelector("select");
-      onChildAdded(labelRef, (label) => {
-        const opt = document.createElement("option");
-        opt.value = label.key;
-        opt.textContent = label.val();
-        select.appendChild(opt);
-      });
     });
-
-    window.hapusCatatan = function (id) {
-      const itemRef = ref(db, `daftarCatatan/${id}`);
-      remove(itemRef);
-    };
 
     onChildRemoved(catatanRef, (data) => {
       const item = document.querySelector(`li[data-id="${data.key}"]`);
       if (item) item.remove();
     });
 
-    window.toggleMenu = function () {
-      document.getElementById("menuPopup").classList.toggle("show");
+    window.tampilPopupKonfirmasi = function(id) {
+      hapusId = id;
+      popup.classList.add("active");
     };
 
-    window.toggleLabelPopup = function (event) {
-      event.preventDefault();
-      document.getElementById("labelPopup").classList.toggle("show");
-    };
-
-    document.addEventListener("click", function (e) {
-      const menu = document.getElementById("menuPopup");
-      const button = document.querySelector(".menu-btn");
-      const labelPopup = document.getElementById("labelPopup");
-      const labelTrigger = document.querySelector('a[onclick^="toggleLabelPopup"]');
-
-      if (!menu.contains(e.target) && !button.contains(e.target)) {
-        menu.classList.remove("show");
-      }
-      if (!labelPopup.contains(e.target) && !labelTrigger.contains(e.target)) {
-        labelPopup.classList.remove("show");
-      }
-    });
-
-    window.tambahLabel = function () {
-      const teks = inputLabel.value.trim();
-      if (teks !== "") {
-        push(labelRef, teks);
-        inputLabel.value = "";
+    window.konfirmasiHapus = function () {
+      if (hapusId) {
+        remove(ref(db, `daftarCatatan/${hapusId}`));
+        hapusId = "";
+        popup.classList.remove("active");
       }
     };
 
-    onChildAdded(labelRef, (data) => {
-      const item = document.createElement("li");
-      item.setAttribute("data-id", data.key);
-      item.style.display = "flex";
-      item.style.justifyContent = "space-between";
-      item.style.alignItems = "center";
-      item.style.padding = "4px 0";
-      item.style.fontSize = "13px";
-      item.innerHTML = `
-        <a href="label.html?id=${data.key}" style="color: white; text-decoration: none;">${data.val()}</a>
-        <button onclick="hapusLabel('${data.key}')" style="color:#888;">🗑</button>
-      `;
-      daftarLabel.appendChild(item);
-    });
-
-    window.hapusLabel = function (id) {
-      const itemRef = ref(db, `daftarLabel/${id}`);
-      remove(itemRef);
-    };
-
-    onChildRemoved(labelRef, (data) => {
-      const item = document.querySelector(`#daftarLabel li[data-id="${data.key}"]`);
-      if (item) item.remove();
-    });
-
-    window.pindahKeLabel = function (catatanId, labelId) {
-      if (!labelId) return;
-      const item = document.querySelector(`li[data-id="${catatanId}"]`);
-      const teks = item.querySelector("span").textContent;
-      const labelCatatanRef = ref(db, `catatanLabel/${labelId}`);
-      push(labelCatatanRef, teks);
-      remove(ref(db, `daftarCatatan/${catatanId}`));
+    window.batalHapus = function () {
+      popup.classList.remove("active");
+      hapusId = "";
     };
   </script>
+
+  <!-- Menu Swipe & Shortcut -->
   <script>
-  if (sessionStorage.getItem("aksesAdmin") !== "true") {
-    location.href = "index.html";
-  }
-</script>
+    const overlay = document.getElementById("overlay");
+    const navKanan = document.getElementById("navKanan");
+
+    function openNavKanan() {
+      navKanan.classList.add("open");
+      overlay.classList.add("active");
+    }
+
+    function closeNavs() {
+      navKanan.classList.remove("open");
+      overlay.classList.remove("active");
+    }
+
+    overlay.onclick = closeNavs;
+
+    document.getElementById("swipe-right").addEventListener("click", openNavKanan);
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeNavs();
+      if (e.key === "ArrowRight") openNavKanan();
+    });
+
+    // Swipe kanan dari ujung layar untuk buka menu (khusus mobile)
+    let startX = 0;
+    document.addEventListener("touchstart", (e) => {
+      startX = e.touches[0].clientX;
+    });
+    document.addEventListener("touchend", (e) => {
+      const endX = e.changedTouches[0].clientX;
+      if (startX > window.innerWidth - 40 && endX < startX - 30) {
+        openNavKanan();
+      }
+    });
+
+    if (sessionStorage.getItem("aksesAdmin") !== "true") {
+      location.href = "index.html";
+    }
+  </script>
 </body>
 </html>
