@@ -20,65 +20,66 @@
       background: var(--bg);
       color: var(--text);
       font-family: 'Segoe UI', sans-serif;
+      overflow-x: hidden;
     }
 
-    header {
-      background: var(--header);
-      padding: 6px 12px;
-      height: 42px;
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 900;
+    }
+    .overlay.active { display: block; }
+
+    nav.vertical-nav {
+      position: fixed;
+      top: 50%;
+      right: 0;
+      transform: translateX(100%) translateY(-50%);
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: white;
-      font-size: 15px;
-      font-weight: 600;
-      box-shadow: var(--shadow);
-      position: relative;
-    }
-
-    .menu-btn {
-      font-size: 20px;
-      cursor: pointer;
+      flex-direction: column;
+      gap: 12px;
+      padding: 20px 16px;
+      max-height: 90vh;
+      z-index: 1000;
       background: none;
-      border: none;
-      color: white;
-      padding: 0;
-      line-height: 1;
-    }
-
-    .menu-popup {
-      position: absolute;
-      top: 42px;
-      right: 12px;
-      background: transparent;
-      border-radius: 10px;
-      z-index: 10;
-      min-width: 120px;
+      transition: transform 0.3s ease, opacity 0.3s ease;
       opacity: 0;
-      transform: translateY(-5px);
-      transition: opacity 0.2s ease, transform 0.2s ease;
       pointer-events: none;
-      text-align: right;
     }
 
-    .menu-popup.show {
+    nav.vertical-nav.open {
+      transform: translateX(0) translateY(-50%);
       opacity: 1;
-      transform: translateY(0);
       pointer-events: auto;
     }
 
-    .menu-popup a {
-      display: block;
-      padding: 10px 12px;
-      color: var(--text);
-      text-decoration: none;
-      font-size: 13px;
-      text-align: right;
+    .nav-button {
+      background: none;
+      border: none;
+      font-size: 16px;
+      color: white;
+      cursor: pointer;
+      padding: 6px 0;
+      height: 48px;
+      line-height: 48px;
+      border-bottom: 1px solid rgba(255,255,255,0.3);
     }
 
-    .menu-popup a:hover {
-      background: #2a2a2a;
+    .nav-button:hover {
+      background-color: rgba(255,255,255,0.1);
     }
+
+    .swipe-area {
+      position: fixed;
+      top: 0;
+      width: 40px;
+      height: 100vh;
+      z-index: 950;
+    }
+
+    #swipe-right { right: 0; }
 
     main {
       max-width: 800px;
@@ -99,13 +100,8 @@
       margin-bottom: 20px;
     }
 
-    .btn-tambah:hover {
-      background: #0d8ae0;
-    }
-
     .search-input {
       width: 100%;
-      max-width: 100%;
       box-sizing: border-box;
       padding: 10px;
       font-size: 14px;
@@ -120,27 +116,24 @@
     .doc {
       background: var(--card);
       padding: 12px 16px;
-      border: 1px solid #333;
-      margin-bottom: 10px;
       border-radius: 6px;
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: 10px;
     }
 
     .doc-info {
-      flex: 1;
       cursor: pointer;
-      min-width: 0;
+      word-wrap: break-word;
     }
 
     .doc-title {
       font-weight: bold;
       font-size: 16px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
     .doc-date {
@@ -152,76 +145,74 @@
       background: var(--danger);
       color: white;
       border: none;
-      padding: 6px 10px;
+      padding: 6px 12px;
       border-radius: 4px;
-      font-size: 12px;
+      font-size: 13px;
       cursor: pointer;
-      margin-left: 12px;
-      flex-shrink: 0;
+      align-self: flex-end;
     }
 
     .btn-hapus:hover {
       background: #c62828;
     }
 
-    .notifikasi {
+    .popup-konfirmasi {
       position: fixed;
-      bottom: 20px;
+      top: 50%;
       left: 50%;
-      transform: translateX(-50%);
-      background: #323232;
-      color: white;
-      padding: 10px 16px;
-      border-radius: 6px;
-      font-size: 14px;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      z-index: 1000;
+      transform: translate(-50%, -50%);
+      background: #1e1e1e;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      z-index: 9999;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 90%;
+      max-width: 300px;
+      text-align: center;
     }
 
-    .notifikasi.show {
-      opacity: 1;
+    .popup-konfirmasi.show {
+      display: flex;
+    }
+
+    .popup-konfirmasi button {
+      margin: 8px 6px 0;
+      padding: 6px 12px;
+      font-size: 13px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .btn-batal {
+      background: #555;
+      color: white;
+    }
+
+    .btn-hapus-konfirmasi {
+      background: var(--danger);
+      color: white;
     }
 
     @media (max-width: 500px) {
-      .doc {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .btn-hapus {
-        margin: 10px 0 0;
-      }
-
-      .doc-title {
-        font-size: 14px;
-      }
-
-      .search-input,
-      .btn-tambah {
-        font-size: 13px;
-        padding: 8px 12px;
-      }
-
-      header {
-        font-size: 14px;
-        height: 42px;
-        padding: 6px 12px;
-      }
+      .doc-title { font-size: 14px; }
+      .btn-tambah, .search-input { font-size: 13px; padding: 8px 12px; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <div>Dokumen</div>
-    <button class="menu-btn" onclick="toggleMenu()">☰</button>
-     <div class="menu-popup" id="menuPopup">
-      <a href="utama.html">Beranda</a>
-      <a href="catatan.html">Catatan</a>
-      <a href="dokumen.html">Dokumen</a>
-      <a href="checklist.html">Checklist</a>
-    </div>
-  </header>
+  <div class="overlay" id="overlay"></div>
+  <div id="swipe-right" class="swipe-area"></div>
+
+  <nav class="vertical-nav" id="navKanan">
+    <button class="nav-button" onclick="location.href='utama.html'">Beranda</button>
+    <button class="nav-button" onclick="location.href='catatan.html'">Catatan</button>
+    <button class="nav-button" onclick="location.href='dokumen.html'">Dokumen</button>
+    <button class="nav-button" onclick="location.href='checklist.html'">Checklist</button>
+  </nav>
 
   <main>
     <a class="btn-tambah" href="dokumen2.html">+ Tambah Dokumen</a>
@@ -229,7 +220,13 @@
     <div id="daftar-dokumen">Memuat dokumen...</div>
   </main>
 
-  <div id="notifikasi" class="notifikasi"></div>
+  <div id="popupKonfirmasi" class="popup-konfirmasi">
+    <p>Yakin ingin menghapus dokumen ini?</p>
+    <div style="display:flex; justify-content:center; gap:10px;">
+      <button class="btn-batal" onclick="batalHapus()">Batal</button>
+      <button class="btn-hapus-konfirmasi" onclick="konfirmasiHapus()">Hapus</button>
+    </div>
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -237,41 +234,25 @@
       getFirestore, collection, getDocs, query, orderBy, doc, deleteDoc
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    const firebaseConfig = {
+    const app = initializeApp({
       apiKey: "AIzaSyAXsUMm-JQfvoGNaXemrj1Z6ZEyvtSn-pw",
       authDomain: "virgo-c8272.firebaseapp.com",
-      databaseURL: "https://virgo-c8272-default-rtdb.firebaseio.com",
       projectId: "virgo-c8272",
       storageBucket: "virgo-c8272.appspot.com",
       messagingSenderId: "387259252172",
       appId: "1:387259252172:web:25fbec736d94086c6af169"
-    };
+    });
 
-    const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
     const daftar = document.getElementById('daftar-dokumen');
     const searchInput = document.getElementById('search');
-    const notifBox = document.getElementById('notifikasi');
-    let semuaDokumen = [];
 
-    function showNotif(pesan, lama = 2000) {
-      notifBox.innerText = pesan;
-      notifBox.classList.add("show");
-      setTimeout(() => {
-        notifBox.classList.remove("show");
-      }, lama);
-    }
+    let semuaDokumen = [];
+    let idYangAkanDihapus = null;
 
     async function loadDokumen() {
       const q = query(collection(db, "dokumen"), orderBy("waktu", "desc"));
       const snapshot = await getDocs(q);
-
-      if (snapshot.empty) {
-        daftar.innerHTML = "<p>Belum ada dokumen tersimpan.</p>";
-        return;
-      }
-
       semuaDokumen = [];
 
       snapshot.forEach(docSnap => {
@@ -279,7 +260,6 @@
         const id = docSnap.id;
         const isiHTML = data.isi || "";
         const waktu = data.waktu?.toDate()?.toLocaleString("id-ID") || "Tidak diketahui";
-
         const match = isiHTML.match(/<h1[^>]*>(.*?)<\/h1>/i);
         const judul = match ? match[1].trim() : "(Tanpa Judul)";
         semuaDokumen.push({ id, judul, waktu });
@@ -290,71 +270,85 @@
 
     function tampilkanDokumen() {
       const keyword = searchInput.value.trim().toLowerCase();
-      const hasil = semuaDokumen.filter(d =>
-        d.judul.toLowerCase().includes(keyword)
-      );
-
-      daftar.innerHTML = "";
-
-      if (hasil.length === 0) {
-        daftar.innerHTML = "<p>Tidak ada dokumen yang cocok.</p>";
-        return;
-      }
+      const hasil = semuaDokumen.filter(d => d.judul.toLowerCase().includes(keyword));
+      daftar.innerHTML = hasil.length === 0 ? "<p>Tidak ada dokumen.</p>" : "";
 
       hasil.forEach(dok => {
-        const item = document.createElement("div");
-        item.className = "doc";
+        const div = document.createElement("div");
+        div.className = "doc";
 
         const info = document.createElement("div");
         info.className = "doc-info";
-        info.innerHTML = `
-          <div class="doc-title">${dok.judul}</div>
-          <div class="doc-date">${dok.waktu}</div>
-        `;
-        info.onclick = () => {
-          window.location.href = `dokumen2.html?id=${dok.id}`;
-        };
+        info.innerHTML = `<div class="doc-title">${dok.judul}</div><div class="doc-date">${dok.waktu}</div>`;
+        info.onclick = () => location.href = `dokumen2.html?id=${dok.id}`;
 
         const hapusBtn = document.createElement("button");
         hapusBtn.className = "btn-hapus";
-        hapusBtn.innerText = "Hapus";
-        hapusBtn.onclick = async (e) => {
+        hapusBtn.textContent = "Hapus";
+        hapusBtn.onclick = (e) => {
           e.stopPropagation();
-          showNotif("Menghapus...");
-          await deleteDoc(doc(db, "dokumen", dok.id));
-          semuaDokumen = semuaDokumen.filter(x => x.id !== dok.id);
-          tampilkanDokumen();
-          showNotif("Dokumen dihapus");
+          idYangAkanDihapus = dok.id;
+          document.getElementById("popupKonfirmasi").classList.add("show");
         };
 
-        item.appendChild(info);
-        item.appendChild(hapusBtn);
-        daftar.appendChild(item);
+        div.appendChild(info);
+        div.appendChild(hapusBtn);
+        daftar.appendChild(div);
       });
     }
 
     searchInput.addEventListener("input", tampilkanDokumen);
     loadDokumen();
+
+    window.batalHapus = () => {
+      document.getElementById("popupKonfirmasi").classList.remove("show");
+      idYangAkanDihapus = null;
+    };
+
+    window.konfirmasiHapus = async () => {
+      if (idYangAkanDihapus) {
+        await deleteDoc(doc(db, "dokumen", idYangAkanDihapus));
+        semuaDokumen = semuaDokumen.filter(x => x.id !== idYangAkanDihapus);
+        tampilkanDokumen();
+        document.getElementById("popupKonfirmasi").classList.remove("show");
+        idYangAkanDihapus = null;
+      }
+    };
   </script>
 
   <script>
-    function toggleMenu() {
-      const menu = document.getElementById("menuPopup");
-      menu.classList.toggle("show");
+    const overlay = document.getElementById("overlay");
+    const navKanan = document.getElementById("navKanan");
+
+    function openNavKanan() {
+      navKanan.classList.add("open");
+      overlay.classList.add("active");
+      navKanan.querySelector("button")?.focus();
     }
 
-    document.addEventListener("click", function (e) {
-      const menu = document.getElementById("menuPopup");
-      const button = document.querySelector(".menu-btn");
-      if (!menu.contains(e.target) && !button.contains(e.target)) {
-        menu.classList.remove("show");
-      }
+    function closeNavs() {
+      navKanan.classList.remove("open");
+      overlay.classList.remove("active");
+    }
+
+    overlay.onclick = closeNavs;
+
+    document.addEventListener("touchstart", e => window._touchX = e.touches[0].clientX);
+    document.addEventListener("touchend", e => {
+      const endX = e.changedTouches[0].clientX;
+      if (window._touchX > window.innerWidth - 40 && endX < window._touchX - 30) openNavKanan();
+    });
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowRight") openNavKanan();
+      else if (e.key === "Escape") closeNavs();
     });
   </script>
-<script>
-  if (sessionStorage.getItem("aksesAdmin") !== "true") {
-    location.href = "index.html";
-  }
-</script>
+
+  <script>
+    if (sessionStorage.getItem("aksesAdmin") !== "true") {
+      location.href = "index.html";
+    }
+  </script>
 </body>
 </html>
