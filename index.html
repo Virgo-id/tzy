@@ -17,17 +17,11 @@
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
-      color: white;
       display: flex;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      opacity: 0;
-      animation: fadeInBody 1.2s ease forwards;
-    }
-
-    @keyframes fadeInBody {
-      to { opacity: 1; }
+      background-color: #000;
     }
 
     .overlay {
@@ -39,97 +33,60 @@
       z-index: -1;
     }
 
-    form {
-      max-width: 400px;
-      width: 100%;
-      background: rgba(255, 255, 255, 0.00);
-      padding: 2rem;
-      border-radius: 16px;
-      backdrop-filter: blur(6px);
-      box-shadow: 0 0 20px rgba(0,0,0,0.0);
-      transform: translateY(30px);
-      opacity: 0;
-      animation: slideFadeIn 1s ease-out 0.3s forwards;
+    .input-wrapper {
+      position: relative;
+      border-radius: 25px;
     }
 
-    @keyframes slideFadeIn {
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
+    .input-wrapper::before {
+      content: "";
+      position: absolute;
+      top: -3px;
+      left: -3px;
+      right: -3px;
+      bottom: -3px;
+      border-radius: 30px;
+      background: linear-gradient(270deg, #00ffcc, #00ccff, #6600ff, #00ffcc);
+      background-size: 600% 600%;
+      animation: glow 6s linear infinite;
+      z-index: -1;
+      filter: blur(4px);
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 1.5rem;
-      font-size: 1.5rem;
-    }
-
-    label {
-      display: block;
-      margin: 1rem 0 0.3rem;
-      font-weight: 500;
-      color: #ddd;
+    @keyframes glow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
 
     input {
-      width: 100%;
-      padding: 0.7rem;
-      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.2);
       border: none;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.2);
+      border-radius: 25px;
+      padding: 0.8rem 1rem;
+      font-size: 1.2rem;
       color: white;
       outline: none;
-      transition: background 0.3s ease, box-shadow 0.3s ease;
+      backdrop-filter: blur(3px);
+      transition: background 0.3s ease;
+      width: 280px;
     }
 
     input:focus {
       background: rgba(255,255,255,0.3);
       box-shadow: 0 0 0 2px #00cc88aa;
     }
-
-    button {
-      margin-top: 2rem;
-      width: 100%;
-      padding: 0.8rem;
-      font-size: 1.1rem;
-      background: #00cc88;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: background 0.3s ease, transform 0.2s ease;
-    }
-
-    button:hover:enabled {
-      background: #00b07a;
-      transform: scale(1.03);
-    }
-
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
   </style>
 </head>
 <body>
   <div class="overlay"></div>
-
-  <form id="formLogin">
-    <h1>🔐 Masuk Admin</h1>
-
-    <label for="sandi">Masukkan Sandi</label>
-    <input type="password" id="sandi" required>
-
-    <button type="submit" id="btnMasuk">Masuk</button>
-  </form>
+  <div class="input-wrapper">
+    <input type="password" id="sandi" placeholder="Sandi" autofocus autocomplete="off"/>
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-      getFirestore, doc, getDoc
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB59jxyeAOLp4bLJdBF4R0-bw7NnieEzes",
@@ -143,40 +100,23 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    document.getElementById("formLogin").addEventListener("submit", async (e) => {
-      e.preventDefault();
+    const input = document.getElementById("sandi");
+    let sandiBenar = "";
 
-      const button = document.getElementById("btnMasuk");
-      const input = document.getElementById("sandi").value.trim();
+    getDoc(doc(db, "pengaturan", "admin")).then(ref => {
+      if (ref.exists()) {
+        sandiBenar = ref.data().password;
+      } else {
+        alert("Sandi belum disetel.");
+      }
+    }).catch(() => {
+      alert("Gagal mengambil data sandi.");
+    });
 
-      if (!input) return alert("Sandi wajib diisi!");
-
-      button.disabled = true;
-      button.textContent = "Bismillah...";
-
-      try {
-        const ref = await getDoc(doc(db, "pengaturan", "admin"));
-        if (!ref.exists()) {
-          alert("Sandi belum disetel di sistem!");
-          button.disabled = false;
-          button.textContent = "Masuk";
-          return;
-        }
-
-        const stored = ref.data().password;
-
-        if (input === stored) {
-          sessionStorage.setItem("aksesAdmin", "true");
-          location.href = "utama.html";
-        } else {
-          alert("Sandi salah!");
-          button.disabled = false;
-          button.textContent = "Masuk";
-        }
-      } catch (error) {
-        alert("Terjadi kesalahan saat memproses.");
-        button.disabled = false;
-        button.textContent = "Masuk";
+    input.addEventListener("input", () => {
+      if (input.value.trim() === sandiBenar) {
+        sessionStorage.setItem("aksesAdmin", "true");
+        location.href = "utama.html";
       }
     });
   </script>
