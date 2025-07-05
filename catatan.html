@@ -10,16 +10,12 @@
       --text: #f1f1f1;
       --input-bg: #1f1f1f;
       --item-bg: #1a1a1a;
-      --button-bg: #3b82f6;
-      --button-hover: #2563eb;
-      --radius: 10px;
+      --danger: #e53935;
       --shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html, body {
-      height: 100%;
+    body {
+      margin: 0;
       font-family: sans-serif;
       background: var(--bg);
       color: var(--text);
@@ -27,30 +23,38 @@
     }
 
     .overlay {
-      display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0,0,0,0.4);
       z-index: 900;
+      display: none;
     }
     .overlay.active { display: block; }
+
+    .swipe-area {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 40px;
+      height: 100vh;
+      z-index: 950;
+    }
 
     nav.vertical-nav {
       position: fixed;
       top: 50%;
       right: 0;
       transform: translateX(100%) translateY(-50%);
-      max-height: 90vh;
       display: flex;
       flex-direction: column;
       gap: 12px;
       padding: 20px 16px;
-      overflow-y: auto;
+      max-height: 90vh;
       z-index: 1000;
       background: none;
-      transition: transform 0.3s ease, opacity 0.3s ease;
       opacity: 0;
       pointer-events: none;
+      transition: transform 0.3s ease, opacity 0.3s ease;
     }
 
     nav.vertical-nav.open {
@@ -68,20 +72,11 @@
       padding: 6px 0;
       height: 48px;
       line-height: 48px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+      border-bottom: 1px solid rgba(255,255,255,0.3);
     }
 
     .nav-button:hover {
       background-color: rgba(255,255,255,0.1);
-    }
-
-    .swipe-area {
-      position: fixed;
-      top: 0;
-      right: 0;
-      width: 40px;
-      height: 100vh;
-      z-index: 950;
     }
 
     .container {
@@ -95,7 +90,7 @@
       padding: 6px 10px;
       font-size: 14px;
       border: none;
-      border-radius: var(--radius);
+      border-radius: 10px;
       background: var(--input-bg);
       color: var(--text);
       resize: none;
@@ -114,15 +109,13 @@
       padding: 8px 14px;
       font-size: 14px;
       border: none;
-      border-radius: var(--radius);
-      background: var(--button-bg);
+      background: #3b82f6;
       color: white;
-      box-shadow: var(--shadow);
       cursor: pointer;
     }
 
     button:active {
-      background: var(--button-hover);
+      background: #2563eb;
     }
 
     ul {
@@ -134,11 +127,11 @@
     li {
       background: var(--item-bg);
       padding: 12px;
-      border-radius: var(--radius);
-      margin-bottom: 8px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow);
       display: flex;
       flex-direction: column;
-      box-shadow: var(--shadow);
     }
 
     li span {
@@ -148,52 +141,73 @@
 
     .hapus-btn {
       align-self: flex-end;
-      color: #888;
-      background: none;
+      background: var(--danger);
+      color: white;
       border: none;
       margin-top: 8px;
-      font-size: 16px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
     }
 
     .hapus-btn:hover {
-      color: #f87171;
+      background: #c62828;
     }
 
     .popup-konfirmasi {
       position: fixed;
-      bottom: 20px;
+      top: 50%;
       left: 50%;
-      transform: translateX(-50%);
+      transform: translate(-50%, -50%);
       background: #1a1a1a;
-      padding: 16px;
-      border-radius: var(--radius);
+      padding: 20px;
+      border-radius: 10px;
       box-shadow: var(--shadow);
       z-index: 9999;
       display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 90%;
+      max-width: 300px;
+      text-align: center;
     }
 
-    .popup-konfirmasi.active {
-      display: block;
+    .popup-konfirmasi.show {
+      display: flex;
     }
 
     .popup-konfirmasi button {
-      margin: 0 4px;
+      margin: 8px 6px 0;
+      padding: 6px 12px;
+      font-size: 13px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .btn-batal {
+      background: #555;
+      color: white;
+    }
+
+    .btn-hapus-konfirmasi {
+      background: var(--danger);
+      color: white;
     }
   </style>
 </head>
 <body>
-  <!-- Swipe Menu & Overlay -->
-  <div class="swipe-area" id="swipe-right"></div>
   <div class="overlay" id="overlay"></div>
+  <div class="swipe-area" id="swipe-right"></div>
+
   <nav class="vertical-nav" id="navKanan">
     <button class="nav-button" onclick="location.href='utama.html'">Beranda</button>
     <button class="nav-button" onclick="location.href='catatan.html'">Catatan</button>
     <button class="nav-button" onclick="location.href='dokumen.html'">Dokumen</button>
     <button class="nav-button" onclick="location.href='checklist.html'">Checklist</button>
-    <button class="nav-button" onclick="location.href='kategori.html'">Kategori</button>
   </nav>
 
-  <!-- Konten -->
   <div class="container">
     <textarea id="inputCatatan" placeholder="Tulis catatan..."></textarea>
     <div class="aksi">
@@ -202,16 +216,14 @@
     <ul id="daftarCatatan"></ul>
   </div>
 
-  <!-- Popup Konfirmasi -->
-  <div class="popup-konfirmasi" id="popupKonfirmasi">
-    <div style="margin-bottom: 8px;">Yakin ingin menghapus?</div>
-    <div style="text-align: right;">
-      <button onclick="konfirmasiHapus()">Ya</button>
-      <button onclick="batalHapus()">Batal</button>
+  <div id="popupKonfirmasi" class="popup-konfirmasi">
+    <p>Yakin ingin menghapus catatan ini?</p>
+    <div style="display:flex; justify-content:center; gap:10px;">
+      <button class="btn-batal" onclick="batalHapus()">Batal</button>
+      <button class="btn-hapus-konfirmasi" onclick="konfirmasiHapus()">Hapus</button>
     </div>
   </div>
 
-  <!-- Firebase Script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
@@ -255,7 +267,7 @@
       item.setAttribute("data-id", data.key);
       item.innerHTML = `
         <span>${data.val()}</span>
-        <button class="hapus-btn" onclick="tampilPopupKonfirmasi('${data.key}')">🗑 Hapus</button>
+        <button class="hapus-btn" onclick="tampilPopupKonfirmasi('${data.key}')">Hapus</button>
       `;
       daftar.appendChild(item);
     });
@@ -267,24 +279,23 @@
 
     window.tampilPopupKonfirmasi = function(id) {
       hapusId = id;
-      popup.classList.add("active");
+      popup.classList.add("show");
     };
 
     window.konfirmasiHapus = function () {
       if (hapusId) {
         remove(ref(db, `daftarCatatan/${hapusId}`));
         hapusId = "";
-        popup.classList.remove("active");
+        popup.classList.remove("show");
       }
     };
 
     window.batalHapus = function () {
-      popup.classList.remove("active");
+      popup.classList.remove("show");
       hapusId = "";
     };
   </script>
 
-  <!-- Menu Swipe & Shortcut -->
   <script>
     const overlay = document.getElementById("overlay");
     const navKanan = document.getElementById("navKanan");
@@ -292,6 +303,7 @@
     function openNavKanan() {
       navKanan.classList.add("open");
       overlay.classList.add("active");
+      navKanan.querySelector("button")?.focus();
     }
 
     function closeNavs() {
@@ -303,26 +315,27 @@
 
     document.getElementById("swipe-right").addEventListener("click", openNavKanan);
 
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeNavs();
+    document.addEventListener("keydown", e => {
       if (e.key === "ArrowRight") openNavKanan();
+      else if (e.key === "Escape") closeNavs();
     });
 
-    // Swipe kanan dari ujung layar untuk buka menu (khusus mobile)
-    let startX = 0;
-    document.addEventListener("touchstart", (e) => {
-      startX = e.touches[0].clientX;
-    });
-    document.addEventListener("touchend", (e) => {
+    document.addEventListener("touchstart", e => window._touchX = e.touches[0].clientX);
+    document.addEventListener("touchend", e => {
       const endX = e.changedTouches[0].clientX;
-      if (startX > window.innerWidth - 40 && endX < startX - 30) {
+      if (window._touchX > window.innerWidth - 40 && endX < window._touchX - 30) {
         openNavKanan();
       }
     });
 
+    
+  </script>
+
+  <script>
     if (sessionStorage.getItem("aksesAdmin") !== "true") {
       location.href = "index.html";
     }
   </script>
+
 </body>
 </html>
