@@ -14,67 +14,31 @@
       --shadow: 0 2px 8px rgba(0,0,0,0.2);
       --radius: 8px;
     }
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       margin: 0;
       background: var(--bg);
       color: var(--text);
       font-family: sans-serif;
+      overflow-x: hidden;
     }
+
     header {
       background: var(--accent);
       color: white;
-      padding: 1px 12px;
+      padding: 12px 16px;
       font-size: 18px;
       font-weight: bold;
-      position: relative;
       box-shadow: var(--shadow);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      text-align: center;
     }
-    .menu-btn {
-      font-size: 20px;
-      cursor: pointer;
-      background: none;
-      border: none;
-      color: white;
-    }
-    .menu-popup {
-      position: absolute;
-      top: 70px;
-      right: 14px;
-      background: transparent;
-      border-radius: var(--radius);
-      z-index: 10;
-      min-width: 120px;
-      opacity: 0;
-      transform: translateY(-5px);
-      transition: opacity 0.2s ease, transform 0.2s ease;
-    }
-    .menu-popup.show {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
-    }
-    .menu-popup:not(.show) {
-      pointer-events: none;
-    }
-    .menu-popup a {
-      display: block;
-      padding: 10px;
-      color: var(--text);
-      text-decoration: none;
-      font-size: 13px;
-      text-align: right;
-    }
-    .menu-popup a:hover { background: #2a2a2a; }
 
     .container {
-      max-width: 600px;
+      max-width: 800px;
       margin: auto;
       padding: 16px;
     }
+
     textarea {
       width: 100%;
       padding: 10px;
@@ -83,9 +47,9 @@
       border: none;
       border-radius: var(--radius);
       font-size: 14px;
-      line-height: 1.5;
       resize: none;
     }
+
     button {
       background: var(--accent);
       color: white;
@@ -96,6 +60,7 @@
       margin-top: 8px;
       font-size: 14px;
     }
+
     .card {
       background: var(--item-bg);
       border-radius: var(--radius);
@@ -103,11 +68,16 @@
       margin-top: 14px;
       box-shadow: var(--shadow);
     }
+
     .card h4 {
       margin: 0 0 8px 0;
       font-size: 15px;
       font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
+
     .sub-item {
       display: flex;
       align-items: center;
@@ -115,36 +85,166 @@
       font-size: 14px;
       margin-bottom: 6px;
     }
+
     .sub-item.done {
       text-decoration: line-through;
       opacity: 0.6;
     }
+
     .hapus-btn {
       background: none;
       color: #f87171;
       border: none;
-      font-size: 14px;
+      font-size: 16px;
       cursor: pointer;
-      float: right;
+    }
+
+    #popupKonfirmasi {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #1f1f1f;
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      z-index: 1100;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+
+    #popupOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+    }
+
+    #popupKonfirmasi .btns {
+      margin-top: 12px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    #popupKonfirmasi button {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .btn-batal {
+      background: gray;
+      color: white;
+    }
+
+    .btn-hapus {
+      background: #ef4444;
+      color: white;
+    }
+
+    /* Gaya menu ala Virgo Admin */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 900;
+    }
+
+    .overlay.active {
+      display: block;
+    }
+
+    nav.vertical-nav {
+      position: fixed;
+      top: 50%;
+      right: 0;
+      transform: translateX(100%) translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 20px 16px;
+      max-height: 90vh;
+      overflow-y: auto;
+      z-index: 1000;
+      background: none;
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    nav.vertical-nav.open {
+      transform: translateX(0) translateY(-50%);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .nav-button {
+      background: none;
+      border: none;
+      font-size: 16px;
+      color: white;
+      cursor: pointer;
+      padding: 6px 0;
+      height: 48px;
+      line-height: 48px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .nav-button:hover {
+      background-color: rgba(255,255,255,0.1);
+    }
+
+    .swipe-area {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 40px;
+      height: 100vh;
+      z-index: 950;
+    }
+
+    @media (max-width: 600px) {
+      .nav-button { font-size: 13px; }
+      .card h4 { font-size: 14px; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <div>Checklist</div>
-    <button class="menu-btn" onclick="toggleMenu()">☰</button>
-    <div class="menu-popup" id="menuPopup">
-      <a href="utama.html">Beranda</a>
-      <a href="catatan.html">Catatan</a>
-      <a href="dokumen.html">Dokumen</a>
-      <a href="checklist.html">Checklist</a>
-    </div>
-  </header>
+  <header>Checklist</header>
+
+  <!-- Swipe & overlay -->
+  <div class="swipe-area" id="swipe-right"></div>
+  <div class="overlay" id="overlay"></div>
+
+  <nav class="vertical-nav" id="navKanan">
+    <button class="nav-button" onclick="location.href='utama.html'">Beranda</button>
+    <button class="nav-button" onclick="location.href='catatan.html'">Catatan</button>
+    <button class="nav-button" onclick="location.href='dokumen.html'">Dokumen</button>
+    <button class="nav-button" onclick="location.href='checklist.html'">Checklist</button>
+  </nav>
 
   <div class="container">
     <textarea id="inputItem" placeholder="Baris pertama: judul\nBaris berikutnya: isi checklist..."></textarea>
     <button onclick="tambahItem()">Tambah</button>
     <div id="daftarItem"></div>
+  </div>
+
+  <!-- Konfirmasi Hapus -->
+  <div id="popupOverlay" onclick="batalHapus()"></div>
+  <div id="popupKonfirmasi">
+    <p>Yakin ingin menghapus?</p>
+    <div class="btns">
+      <button class="btn-batal" onclick="batalHapus()">Batal</button>
+      <button class="btn-hapus" onclick="konfirmasiHapus()">Hapus</button>
+    </div>
   </div>
 
   <script type="module">
@@ -154,13 +254,12 @@
       ref,
       push,
       onChildAdded,
-      onChildChanged,
       onChildRemoved,
       update,
       remove
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-    const firebaseConfig = {
+    const app = initializeApp({
       apiKey: "AIzaSyAXsUMm-JQfvoGNaXemrj1Z6ZEyvtSn-pw",
       authDomain: "virgo-c8272.firebaseapp.com",
       databaseURL: "https://virgo-c8272-default-rtdb.firebaseio.com",
@@ -168,93 +267,121 @@
       storageBucket: "virgo-c8272.appspot.com",
       messagingSenderId: "387259252172",
       appId: "1:387259252172:web:25fbec736d94086c6af169"
-    };
+    });
 
-    const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const checklistRef = ref(db, 'subChecklist');
-
     const input = document.getElementById("inputItem");
     const daftar = document.getElementById("daftarItem");
 
-    window.tambahItem = function () {
-      const baris = input.value.trim().split("\n").map(b => b.trim()).filter(Boolean);
+    window.tambahItem = () => {
+      const baris = input.value.trim().split("\n").filter(Boolean);
       if (baris.length > 1) {
-        const judul = baris[0];
-        const items = baris.slice(1).map(t => ({ teks: t, selesai: false }));
-        push(checklistRef, { judul, items });
+        const [judul, ...items] = baris;
+        push(checklistRef, {
+          judul,
+          items: items.map(teks => ({ teks, selesai: false }))
+        });
         input.value = "";
-        input.focus();
       }
     };
 
     onChildAdded(checklistRef, (data) => {
-      renderKartu(data.key, data.val());
-    });
-
-    function renderKartu(id, data) {
       const div = document.createElement("div");
       div.className = "card";
-      div.setAttribute("data-id", id);
+      div.dataset.id = data.key;
 
       const h4 = document.createElement("h4");
-      h4.textContent = data.judul;
+      h4.textContent = data.val().judul;
 
       const hapus = document.createElement("button");
       hapus.className = "hapus-btn";
       hapus.textContent = "🗑";
-      hapus.onclick = () => remove(ref(db, `subChecklist/${id}`));
+      hapus.onclick = () => tampilkanPopupHapus(data.key);
 
       h4.appendChild(hapus);
       div.appendChild(h4);
 
-      data.items.forEach((item, index) => {
-        const baris = document.createElement("div");
-        baris.className = "sub-item";
-        if (item.selesai) baris.classList.add("done");
+      data.val().items.forEach((item, i) => {
+        const sub = document.createElement("div");
+        sub.className = "sub-item" + (item.selesai ? " done" : "");
 
         const cb = document.createElement("input");
         cb.type = "checkbox";
         cb.checked = item.selesai;
-        cb.onchange = () => toggleSelesai(id, index, cb.checked);
+        cb.onchange = () => update(ref(db, `subChecklist/${data.key}/items/${i}`), { selesai: cb.checked });
 
-        const span = document.createElement("span");
-        span.textContent = item.teks;
+        const teks = document.createElement("span");
+        teks.textContent = item.teks;
 
-        baris.appendChild(cb);
-        baris.appendChild(span);
-        div.appendChild(baris);
+        sub.appendChild(cb);
+        sub.appendChild(teks);
+        div.appendChild(sub);
       });
 
       daftar.appendChild(div);
-    }
+    });
 
-    function toggleSelesai(id, index, selesai) {
-      const itemRef = ref(db, `subChecklist/${id}/items/${index}`);
-      update(itemRef, { selesai });
-    }
-
-    onChildRemoved(checklistRef, (data) => {
+    onChildRemoved(checklistRef, data => {
       const card = document.querySelector(`.card[data-id="${data.key}"]`);
       if (card) card.remove();
     });
 
-    window.toggleMenu = function () {
-      document.getElementById("menuPopup").classList.toggle("show");
+    // Popup hapus
+    let idUntukHapus = null;
+    window.tampilkanPopupHapus = id => {
+      idUntukHapus = id;
+      document.getElementById("popupKonfirmasi").style.display = "block";
+      document.getElementById("popupOverlay").style.display = "block";
     };
-    document.addEventListener("click", function (e) {
-      const menu = document.getElementById("menuPopup");
-      const button = document.querySelector(".menu-btn");
-      if (!menu.contains(e.target) && !button.contains(e.target)) {
-        menu.classList.remove("show");
+    window.batalHapus = () => {
+      idUntukHapus = null;
+      document.getElementById("popupKonfirmasi").style.display = "none";
+      document.getElementById("popupOverlay").style.display = "none";
+    };
+    window.konfirmasiHapus = () => {
+      if (idUntukHapus) {
+        remove(ref(db, `subChecklist/${idUntukHapus}`));
+        batalHapus();
+      }
+    };
+
+    // Swipe & Menu
+    const overlay = document.getElementById("overlay");
+    const navKanan = document.getElementById("navKanan");
+
+    function openNav() {
+      navKanan.classList.add("open");
+      overlay.classList.add("active");
+    }
+
+    function closeNav() {
+      navKanan.classList.remove("open");
+      overlay.classList.remove("active");
+    }
+
+    overlay.onclick = closeNav;
+
+    document.getElementById("swipe-right").addEventListener("touchstart", e => {
+      window._touchX = e.touches[0].clientX;
+    });
+
+    document.getElementById("swipe-right").addEventListener("touchend", e => {
+      if (window._touchX > window.innerWidth - 40 && e.changedTouches[0].clientX < window._touchX - 30) {
+        openNav();
       }
     });
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowRight") openNav();
+      else if (e.key === "Escape") closeNav();
+    });
   </script>
+
   <script>
-  if (sessionStorage.getItem("aksesAdmin") !== "true") {
-    location.href = "index.html";
-  }
-</script>
-  
+    if (sessionStorage.getItem("aksesAdmin") !== "true") {
+      location.href = "index.html";
+    }
+  </script>
 </body>
 </html>
