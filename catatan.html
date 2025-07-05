@@ -140,11 +140,9 @@
     }
 
     .hapus-btn {
-      align-self: flex-end;
       background: var(--danger);
       color: white;
       border: none;
-      margin-top: 8px;
       padding: 6px 12px;
       border-radius: 6px;
       font-size: 13px;
@@ -153,6 +151,15 @@
 
     .hapus-btn:hover {
       background: #c62828;
+    }
+
+    select {
+      padding: 4px 6px;
+      font-size: 13px;
+      background: var(--input-bg);
+      color: var(--text);
+      border: none;
+      border-radius: 6px;
     }
 
     .popup-konfirmasi {
@@ -195,6 +202,13 @@
       background: var(--danger);
       color: white;
     }
+
+    .bawah-opsi {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 8px;
+    }
   </style>
 </head>
 <body>
@@ -232,7 +246,9 @@
       push,
       onChildAdded,
       onChildRemoved,
-      remove
+      remove,
+      get,
+      set
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     const app = initializeApp({
@@ -247,6 +263,7 @@
 
     const db = getDatabase(app);
     const catatanRef = ref(db, 'daftarCatatan');
+    const labelRef = ref(db, 'daftarLabel');
 
     const input = document.getElementById("inputCatatan");
     const daftar = document.getElementById("daftarCatatan");
@@ -257,17 +274,33 @@
     window.tambahCatatan = function () {
       const teks = input.value.trim();
       if (teks !== "") {
-        push(catatanRef, teks);
+        push(catatanRef, { teks });
         input.value = "";
       }
     };
 
-    onChildAdded(catatanRef, (data) => {
+    onChildAdded(catatanRef, async (data) => {
+      const { teks } = data.val();
+      const id = data.key;
+
+      const labelSnapshot = await get(labelRef);
+      const labelData = labelSnapshot.exists() ? labelSnapshot.val() : {};
+
+      const selectOptions = Object.entries(labelData).map(
+        ([key, val]) => `<option value="${key}">${val}</option>`
+      ).join("");
+
       const item = document.createElement("li");
-      item.setAttribute("data-id", data.key);
+      item.setAttribute("data-id", id);
       item.innerHTML = `
-        <span>${data.val()}</span>
-        <button class="hapus-btn" onclick="tampilPopupKonfirmasi('${data.key}')">Hapus</button>
+        <span>${teks}</span>
+        <div class="bawah-opsi">
+          <select onchange="pindahKeKategori('${id}', this.value)">
+            <option disabled selected>Pilih Kategori</option>
+            ${selectOptions}
+          </select>
+          <button class="hapus-btn" onclick="tampilPopupKonfirmasi('${id}')">Hapus</button>
+        </div>
       `;
       daftar.appendChild(item);
     });
@@ -276,6 +309,16 @@
       const item = document.querySelector(`li[data-id="${data.key}"]`);
       if (item) item.remove();
     });
+
+    window.pindahKeKategori = async function(idCatatan, idKategori) {
+      const catatanPath = ref(db, `daftarCatatan/${idCatatan}`);
+      const snapshot = await get(catatanPath);
+      if (snapshot.exists()) {
+        const isi = snapshot.val().teks || snapshot.val();
+        await push(ref(db, `catatanLabel/${idKategori}`), isi);
+        await remove(catatanPath);
+      }
+    };
 
     window.tampilPopupKonfirmasi = function(id) {
       hapusId = id;
@@ -327,8 +370,6 @@
         openNavKanan();
       }
     });
-
-    
   </script>
 
   <script>
@@ -336,6 +377,5 @@
       location.href = "index.html";
     }
   </script>
-
 </body>
 </html>
