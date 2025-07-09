@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Akuntika</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <style>
+    :root {
+      --bg: #121212;
+      --surface: #1e1e1e;
+      --green: #00e676;
+      --red: #ff5252;
+      --gray: #777;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: white;
+      padding: 1rem;
+    }
+    h1 { text-align: center; margin-bottom: 1rem; }
+
+    input, select, button {
+      width: 100%;
+      margin: 6px 0;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+    input, select {
+      background: var(--surface);
+      color: white;
+    }
+    input.invalid {
+      border: 2px solid var(--red);
+    }
+    button {
+      background: var(--green);
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #00c853;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      background: var(--surface);
+    }
+    th, td {
+      padding: 8px;
+      border: 1px solid #333;
+      text-align: left;
+    }
+    td.keterangan {
+      white-space: normal;
+      word-break: break-word;
+      max-width: 200px;
+    }
+    .tabel-header {
+      margin-top: 2rem;
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: var(--green);
+    }
+
+    .btn-hapus {
+      background: transparent;
+      color: var(--red);
+      font-size: 18px;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    #popupKonfirmasi {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+    #popupBox {
+      background: var(--surface);
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      max-width: 300px;
+    }
+    #popupBox button {
+      margin: 10px 5px 0;
+      width: 100px;
+    }
+    .btn-batal {
+      background: var(--gray);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>Akuntika</h1>
+
+  <div>
+    <input type="text" id="namaTabel" placeholder="Nama Tabel (contoh: Minggu 1)" autocomplete="off" />
+    <input type="text" id="keterangan" placeholder="Keterangan" autocomplete="off" />
+    <input type="number" id="jumlah" placeholder="Jumlah (Rp)" autocomplete="off" />
+    <select id="kategori">
+      <option value="Pendapatan">Pendapatan</option>
+      <option value="Pengeluaran">Pengeluaran</option>
+    </select>
+    <button onclick="tambahTransaksi()">Tambah Transaksi</button>
+  </div>
+
+  <div id="daftarTabel"></div>
+
+  <div id="popupKonfirmasi">
+    <div id="popupBox">
+      <p>Yakin ingin menghapus transaksi ini?</p>
+      <button class="btn-batal" onclick="tutupPopup()">Batal</button>
+      <button class="btn-hapus" onclick="konfirmasiHapus()">Hapus</button>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCcVVNPMS4TiHp5sReAdvVUMViGRoI7zuk",
+      authDomain: "akuntika-54714.firebaseapp.com",
+      projectId: "akuntika-54714",
+      storageBucket: "akuntika-54714.appspot.com",
+      messagingSenderId: "286421022099",
+      appId: "1:286421022099:web:9caebe877ef3460b4b2466"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let idYangAkanDihapus = null;
+    let tabelYangAkanDihapus = null;
+
+    function tutupPopup() {
+      document.getElementById("popupKonfirmasi").style.display = "none";
+      idYangAkanDihapus = null;
+      tabelYangAkanDihapus = null;
+    }
+
+    function tampilkanPopup(id, tabel) {
+      idYangAkanDihapus = id;
+      tabelYangAkanDihapus = tabel;
+      document.getElementById("popupKonfirmasi").style.display = "flex";
+    }
+
+    function konfirmasiHapus() {
+      if (idYangAkanDihapus && tabelYangAkanDihapus) {
+        db.ref(`transaksiCustom/${tabelYangAkanDihapus}/${idYangAkanDihapus}`).remove();
+        tutupPopup();
+      }
+    }
+
+    function tambahTransaksi() {
+      const namaTabel = document.getElementById("namaTabel");
+      const ket = document.getElementById("keterangan");
+      const jml = document.getElementById("jumlah");
+      const kat = document.getElementById("kategori");
+
+      [namaTabel, ket, jml].forEach(e => e.classList.remove("invalid"));
+      let valid = true;
+      if (!namaTabel.value.trim()) { namaTabel.classList.add("invalid"); valid = false; }
+      if (!ket.value.trim()) { ket.classList.add("invalid"); valid = false; }
+      if (!jml.value) { jml.classList.add("invalid"); valid = false; }
+
+      if (!valid) return;
+
+      const now = new Date();
+      const tanggal = now.toISOString().split("T")[0];
+      const waktu = now.toTimeString().split(":").slice(0,2).join(":");
+
+      const data = {
+        tanggal,
+        waktu,
+        keterangan: ket.value.trim(),
+        jumlah: parseInt(jml.value),
+        kategori: kat.value
+      };
+
+      const id = Date.now();
+      const tabel = namaTabel.value.trim();
+
+      db.ref(`transaksiCustom/${tabel}/${id}`).set(data);
+
+      ket.value = "";
+      jml.value = "";
+      kat.value = "Pendapatan";
+    }
+
+    db.ref("transaksiCustom").on("value", (snapshot) => {
+      const data = snapshot.val();
+      const daftar = document.getElementById("daftarTabel");
+      daftar.innerHTML = "";
+
+      if (!data) return;
+
+      Object.entries(data).forEach(([namaTabel, transaksi]) => {
+        const header = document.createElement("div");
+        header.className = "tabel-header";
+        header.textContent = namaTabel;
+        daftar.appendChild(header);
+
+        const table = document.createElement("table");
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>Waktu</th>
+              <th>Keterangan</th>
+              <th>Pendapatan</th>
+              <th>Pengeluaran</th>
+              <th>🗑</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        `;
+        const tbody = table.querySelector("tbody");
+
+        let totalMasuk = 0;
+        let totalKeluar = 0;
+
+        Object.entries(transaksi)
+          .sort((a, b) => a[1].tanggal.localeCompare(b[1].tanggal))
+          .forEach(([id, item]) => {
+            const row = document.createElement("tr");
+            const pendapatan = item.kategori === "Pendapatan" ? item.jumlah : "";
+            const pengeluaran = item.kategori === "Pengeluaran" ? item.jumlah : "";
+
+            if (item.kategori === "Pendapatan") totalMasuk += item.jumlah;
+            else totalKeluar += item.jumlah;
+
+            row.innerHTML = `
+              <td>${item.tanggal}</td>
+              <td>${item.waktu || "-"}</td>
+              <td class="keterangan">${item.keterangan}</td>
+              <td>${pendapatan ? formatRupiah(pendapatan) : ""}</td>
+              <td>${pengeluaran ? formatRupiah(pengeluaran) : ""}</td>
+              <td><button class="btn-hapus" onclick="tampilkanPopup('${id}', '${namaTabel}')">🗑</button></td>
+            `;
+            tbody.appendChild(row);
+          });
+
+        const totalRow1 = document.createElement("tr");
+        totalRow1.innerHTML = `
+          <td colspan="3"><strong>Total Pendapatan</strong></td>
+          <td><strong>${formatRupiah(totalMasuk)}</strong></td>
+          <td colspan="2"></td>
+        `;
+        const totalRow2 = document.createElement("tr");
+        totalRow2.innerHTML = `
+          <td colspan="3"><strong>Total Pengeluaran</strong></td>
+          <td></td>
+          <td><strong>${formatRupiah(totalKeluar)}</strong></td>
+          <td></td>
+        `;
+        const saldoRow = document.createElement("tr");
+        saldoRow.innerHTML = `
+          <td colspan="3"><strong>Saldo Tabel</strong></td>
+          <td colspan="2"><strong>${formatRupiah(totalMasuk - totalKeluar)}</strong></td>
+          <td></td>
+        `;
+        tbody.appendChild(totalRow1);
+        tbody.appendChild(totalRow2);
+        tbody.appendChild(saldoRow);
+
+        daftar.appendChild(table);
+      });
+    });
+
+    function formatRupiah(angka) {
+      return "Rp" + angka.toLocaleString("id-ID");
+    }
+  </script>
+</body>
+</html>
