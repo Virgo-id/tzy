@@ -6,6 +6,7 @@
   <title>Akuntika</title>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <style>
     :root {
       --bg: #121212;
@@ -23,6 +24,15 @@
     }
     h1 { text-align: center; margin-bottom: 1rem; }
 
+    .card {
+      max-width: 700px;
+      margin: 0 auto 2rem;
+      background: var(--surface);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.3);
+    }
+
     input, select, button {
       width: 100%;
       margin: 6px 0;
@@ -32,13 +42,13 @@
       border-radius: 8px;
       box-sizing: border-box;
     }
+
     input, select {
       background: var(--surface);
       color: white;
     }
-    input.invalid {
-      border: 2px solid var(--red);
-    }
+    input.invalid { border: 2px solid var(--red); }
+
     button {
       background: var(--green);
       color: black;
@@ -46,31 +56,44 @@
       cursor: pointer;
       transition: background 0.3s;
     }
+
     button:hover {
       background: #00c853;
     }
 
     table {
       width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
+      max-width: 700px;
+      margin: 1rem auto 2rem;
       background: var(--surface);
+      border-collapse: collapse;
+      border-radius: 10px;
+      overflow: hidden;
     }
     th, td {
-      padding: 8px;
-      border: 1px solid #333;
+      padding: 10px;
+      border-bottom: 1px solid #333;
       text-align: left;
     }
+    thead { background: #262626; }
+    tbody tr:nth-child(odd) { background-color: #1a1a1a; }
+    tbody tr:hover { background-color: #2a2a2a; }
     td.keterangan {
       white-space: normal;
       word-break: break-word;
-      max-width: 200px;
+      max-width: 220px;
     }
+    td:nth-child(5), td:nth-child(6) {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
     .tabel-header {
       margin-top: 2rem;
       font-weight: bold;
       font-size: 1.1rem;
       color: var(--green);
+      text-align: center;
     }
 
     .btn-hapus {
@@ -111,13 +134,13 @@
 <body>
   <h1>Akuntika</h1>
 
-  <div>
+  <div class="card">
     <input type="text" id="namaTabel" placeholder="Nama Tabel (contoh: Minggu 1)" autocomplete="off" />
     <input type="text" id="keterangan" placeholder="Keterangan" autocomplete="off" />
     <input type="number" id="jumlah" placeholder="Jumlah (Rp)" autocomplete="off" />
     <select id="kategori">
-      <option value="Pendapatan">Pendapatan</option>
       <option value="Pengeluaran">Pengeluaran</option>
+      <option value="Pendapatan">Pendapatan</option>
     </select>
     <button onclick="tambahTransaksi()">Tambah Transaksi</button>
   </div>
@@ -144,6 +167,26 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    let userId = null;
+    let namaTabelEl = document.getElementById("namaTabel");
+
+    firebase.auth().signInAnonymously().then(userCredential => {
+      userId = userCredential.user.uid;
+      db.ref(`pengaturanUser/${userId}/tabelTerakhir`).once("value", (snap) => {
+        if (snap.exists()) {
+          namaTabelEl.value = snap.val();
+        }
+      });
+    });
+
+    [namaTabelEl, document.getElementById("keterangan")].forEach(input => {
+      input.addEventListener("input", () => {
+        input.value = input.value
+          .toLowerCase()
+          .replace(/\b\w/g, c => c.toUpperCase());
+      });
+    });
+
     let idYangAkanDihapus = null;
     let tabelYangAkanDihapus = null;
 
@@ -167,14 +210,13 @@
     }
 
     function tambahTransaksi() {
-      const namaTabel = document.getElementById("namaTabel");
       const ket = document.getElementById("keterangan");
       const jml = document.getElementById("jumlah");
       const kat = document.getElementById("kategori");
 
-      [namaTabel, ket, jml].forEach(e => e.classList.remove("invalid"));
+      [namaTabelEl, ket, jml].forEach(e => e.classList.remove("invalid"));
       let valid = true;
-      if (!namaTabel.value.trim()) { namaTabel.classList.add("invalid"); valid = false; }
+      if (!namaTabelEl.value.trim()) { namaTabelEl.classList.add("invalid"); valid = false; }
       if (!ket.value.trim()) { ket.classList.add("invalid"); valid = false; }
       if (!jml.value) { jml.classList.add("invalid"); valid = false; }
 
@@ -193,13 +235,16 @@
       };
 
       const id = Date.now();
-      const tabel = namaTabel.value.trim();
+      const tabel = namaTabelEl.value.trim();
 
       db.ref(`transaksiCustom/${tabel}/${id}`).set(data);
+      if (userId) {
+        db.ref(`pengaturanUser/${userId}/tabelTerakhir`).set(tabel);
+      }
 
       ket.value = "";
       jml.value = "";
-      kat.value = "Pendapatan";
+      kat.value = "Pengeluaran";
     }
 
     db.ref("transaksiCustom").on("value", (snapshot) => {
@@ -219,6 +264,7 @@
         table.innerHTML = `
           <thead>
             <tr>
+              <th>No</th>
               <th>Tanggal</th>
               <th>Waktu</th>
               <th>Keterangan</th>
@@ -236,7 +282,7 @@
 
         Object.entries(transaksi)
           .sort((a, b) => a[1].tanggal.localeCompare(b[1].tanggal))
-          .forEach(([id, item]) => {
+          .forEach(([id, item], index) => {
             const row = document.createElement("tr");
             const pendapatan = item.kategori === "Pendapatan" ? item.jumlah : "";
             const pengeluaran = item.kategori === "Pengeluaran" ? item.jumlah : "";
@@ -245,6 +291,7 @@
             else totalKeluar += item.jumlah;
 
             row.innerHTML = `
+              <td>${index + 1}</td>
               <td>${item.tanggal}</td>
               <td>${item.waktu || "-"}</td>
               <td class="keterangan">${item.keterangan}</td>
@@ -257,20 +304,20 @@
 
         const totalRow1 = document.createElement("tr");
         totalRow1.innerHTML = `
-          <td colspan="3"><strong>Total Pendapatan</strong></td>
+          <td colspan="4"><strong>Total Pendapatan</strong></td>
           <td><strong>${formatRupiah(totalMasuk)}</strong></td>
           <td colspan="2"></td>
         `;
         const totalRow2 = document.createElement("tr");
         totalRow2.innerHTML = `
-          <td colspan="3"><strong>Total Pengeluaran</strong></td>
+          <td colspan="4"><strong>Total Pengeluaran</strong></td>
           <td></td>
           <td><strong>${formatRupiah(totalKeluar)}</strong></td>
           <td></td>
         `;
         const saldoRow = document.createElement("tr");
         saldoRow.innerHTML = `
-          <td colspan="3"><strong>Saldo Tabel</strong></td>
+          <td colspan="4"><strong>Saldo Tabel</strong></td>
           <td colspan="2"><strong>${formatRupiah(totalMasuk - totalKeluar)}</strong></td>
           <td></td>
         `;
