@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daftar Pustakawan</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #121212;
+      color: white;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      background: #1e1e1e;
+      border: 1px solid #333;
+      color: white;
+      border-radius: 4px;
+    }
+    button {
+      margin-top: 16px;
+      padding: 10px 16px;
+      background: #1e88e5;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #notif {
+      margin-top: 20px;
+      color: #4caf50;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Daftar Pustakawan</h1>
+
+  <label for="id">ID Pustakawan</label>
+  <input type="text" id="id" placeholder="Contoh: PUST001">
+
+  <label for="nama">Nama Lengkap</label>
+  <input type="text" id="nama" placeholder="Nama lengkap">
+
+  <button onclick="daftar()">Daftar</button>
+
+  <div id="notif"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import {
+      getDatabase, ref, set
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDguC7UH1JUzBQu1JZX8qPJGVeb6Pc7t98",
+      authDomain: "pustakawan-26664.firebaseapp.com",
+      projectId: "pustakawan-26664",
+      storageBucket: "pustakawan-26664.firebasestorage.app",
+      messagingSenderId: "284579513964",
+      appId: "1:284579513964:web:b45f73ac287e1f49eeba49"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const notif = document.getElementById("notif");
+
+    function tampilNotif(teks, warna = "#4caf50") {
+      notif.textContent = teks;
+      notif.style.color = warna;
+    }
+
+    async function daftar() {
+      const id = document.getElementById("id").value.trim();
+      const nama = document.getElementById("nama").value.trim();
+
+      if (!id || !nama) {
+        tampilNotif("Mohon isi semua kolom.", "orange");
+        return;
+      }
+
+      const pustakawanRef = ref(db, `pustakawan/${id}`);
+      await set(pustakawanRef, {
+        nama: nama,
+        sejak: Date.now()
+      });
+
+      tampilNotif(`✔️ Pendaftaran berhasil untuk ID: ${id}`);
+      document.getElementById("id").value = "";
+      document.getElementById("nama").value = "";
+    }
+  </script>
+</body>
+</html>

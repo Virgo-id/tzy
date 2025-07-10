@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Pustakawan</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #121212;
+      color: white;
+      padding: 16px;
+    }
+    h1 {
+      margin: 0 0 16px;
+    }
+    .pustakawan {
+      padding: 12px;
+      border-bottom: 1px solid #333;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .nama {
+      font-weight: bold;
+    }
+    .tombol {
+      margin-left: 8px;
+      padding: 6px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .hapus {
+      background: crimson;
+      color: white;
+    }
+    .lihat {
+      background: #1e88e5;
+      color: white;
+    }
+    #notif {
+      margin-top: 16px;
+      color: #1e88e5;
+    }
+    #hapusSemua {
+      background: #ff5722;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+    #kembali {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      background: #333;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <button id="kembali" onclick="location.href='index.html'">← Kembali</button>
+  <h1>Daftar Pustakawan</h1>
+  <div id="daftar"></div>
+  <button id="hapusSemua" onclick="hapusSemuaPesan()">🗑️ Hapus Semua Pesan Chat</button>
+  <div id="notif"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import {
+      getDatabase, ref, onValue, set, remove, get
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDguC7UH1JUzBQu1JZX8qPJGVeb6Pc7t98",
+      authDomain: "pustakawan-26664.firebaseapp.com",
+      projectId: "pustakawan-26664",
+      storageBucket: "pustakawan-26664.firebasestorage.app",
+      messagingSenderId: "284579513964",
+      appId: "1:284579513964:web:b45f73ac287e1f49eeba49"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const daftar = document.getElementById("daftar");
+    const notif = document.getElementById("notif");
+
+    function tampilNotif(teks) {
+      notif.textContent = teks;
+    }
+
+    function muatPustakawan() {
+      const pustakawanRef = ref(db, "pustakawan");
+      onValue(pustakawanRef, snap => {
+        daftar.innerHTML = "";
+        if (snap.exists()) {
+          const data = snap.val();
+          Object.keys(data).forEach(id => {
+            const div = document.createElement("div");
+            div.className = "pustakawan";
+
+            const namaEl = document.createElement("div");
+            namaEl.className = "nama";
+            namaEl.textContent = data[id].nama || id;
+
+            const lihatBtn = document.createElement("button");
+            lihatBtn.textContent = "Lihat Profil";
+            lihatBtn.className = "tombol lihat";
+            lihatBtn.onclick = () => {
+              location.href = `profil.html?id=${id}&admin=1`;
+            };
+
+            const hapusBtn = document.createElement("button");
+            hapusBtn.textContent = "Hapus";
+            hapusBtn.className = "tombol hapus";
+            hapusBtn.onclick = async () => {
+              await remove(ref(db, `pustakawan/${id}`));
+              tampilNotif(`✔️ Pustakawan "${data[id].nama || id}" telah dihapus.`);
+            };
+
+            div.appendChild(namaEl);
+            div.appendChild(lihatBtn);
+            div.appendChild(hapusBtn);
+            daftar.appendChild(div);
+          });
+        } else {
+          daftar.innerHTML = "<p>Tidak ada pustakawan.</p>";
+        }
+      });
+    }
+
+    async function hapusSemuaPesan() {
+      await set(ref(db, 'chat/umum'), null);
+
+      const pribadiRef = ref(db, 'chat_pribadi');
+      const snap = await get(pribadiRef);
+      if (snap.exists()) {
+        const semua = snap.val();
+        for (const key in semua) {
+          await set(ref(db, `chat_pribadi/${key}`), null);
+        }
+      }
+
+      tampilNotif("🗑️ Semua pesan telah dihapus dari ruang umum & pribadi.");
+    }
+
+    muatPustakawan();
+  </script>
+</body>
+</html>
