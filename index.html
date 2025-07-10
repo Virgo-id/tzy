@@ -13,81 +13,76 @@
     body {
       margin: 0;
       font-family: system-ui, sans-serif;
-      background-image: url('1.png');
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
+      background: #111; /* latar gelap */
+      color: white;
       display: flex;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      background-color: #000;
+      animation: fadeIn 0.8s ease;
     }
 
-    .overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: -1;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeOut {
+      to { opacity: 0; transform: translateY(-20px); }
     }
 
     .input-wrapper {
-      position: relative;
-      border-radius: 25px;
-    }
-
-    .input-wrapper::before {
-      content: "";
-      position: absolute;
-      top: -3px;
-      left: -3px;
-      right: -3px;
-      bottom: -3px;
-      border-radius: 30px;
-      background: linear-gradient(270deg, #00ffcc, #00ccff, #6600ff, #00ffcc);
-      background-size: 600% 600%;
-      animation: glow 6s linear infinite;
-      z-index: -1;
-      filter: blur(4px);
-    }
-
-    @keyframes glow {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+      text-align: center;
+      padding: 2rem;
+      border-radius: 12px;
+      background: #1a1a1a;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      border: 2px solid #d4af37; /* garis emas statis */
     }
 
     input {
-      background: rgba(255, 255, 255, 0.2);
-      border: none;
-      border-radius: 25px;
-      padding: 0.8rem 1rem;
-      font-size: 1.2rem;
+      background: #222;
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
       color: white;
       outline: none;
-      backdrop-filter: blur(3px);
-      transition: background 0.3s ease;
-      width: 280px;
+      width: 260px;
+      transition: border-color 0.3s ease;
     }
 
     input:focus {
-      background: rgba(255,255,255,0.3);
-      box-shadow: 0 0 0 2px #00cc88aa;
+      border-color: #d4af37;
+    }
+
+    .fade-out {
+      animation: fadeOut 0.5s ease forwards;
+    }
+
+    @media (max-width: 400px) {
+      .input-wrapper {
+        width: 90%;
+        padding: 1.5rem;
+      }
+
+      input {
+        font-size: 1rem;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="overlay"></div>
-  <div class="input-wrapper">
-    <input type="password" id="sandi" placeholder="Sandi" autofocus autocomplete="off"/>
+  <div class="input-wrapper" id="formBox">
+    <input type="password" id="sandi" autocomplete="off"/>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+    // Konfigurasi Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyB59jxyeAOLp4bLJdBF4R0-bw7NnieEzes",
       authDomain: "catatanvirgo-dbe55.firebaseapp.com",
@@ -101,8 +96,10 @@
     const db = getFirestore(app);
 
     const input = document.getElementById("sandi");
+    const formBox = document.getElementById("formBox");
     let sandiBenar = "";
 
+    // Ambil password admin dari Firestore
     getDoc(doc(db, "pengaturan", "admin")).then(ref => {
       if (ref.exists()) {
         sandiBenar = ref.data().password;
@@ -113,11 +110,24 @@
       alert("Gagal mengambil data sandi.");
     });
 
+    // Login otomatis jika sandi cocok
     input.addEventListener("input", () => {
       if (input.value.trim() === sandiBenar) {
         sessionStorage.setItem("aksesAdmin", "true");
-        location.href = "utama.html";
+
+        // Tambahkan animasi keluar
+        formBox.classList.add("fade-out");
+
+        // Arahkan ke halaman utama setelah animasi selesai
+        setTimeout(() => {
+          location.href = "utama.html";
+        }, 500);
       }
+    });
+
+    // Fokus input saat halaman dimuat
+    window.addEventListener("DOMContentLoaded", () => {
+      input.focus();
     });
   </script>
 </body>
